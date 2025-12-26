@@ -1,9 +1,8 @@
 <script lang="ts">
 	import CRM from '$lib/components/modules/CRM.svelte';
-	import CMS from '$lib/components/modules/CMS.svelte';
+	// import CMS from '$lib/components/modules/CMS.svelte'; // ❌ DISABLED FOR BUILD
 
 	export let data;
-	// 🟢 1. EXTRACT 'leadCount' here so we can use it
 	$: ({ session, tenant, status, leadCount } = data);
 
 	// 🛡️ Safe check for modules array
@@ -125,10 +124,6 @@
 			<div class="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
 				{#if modules.includes('crm')}
 					<CRM count={leadCount} />
-				{/if}
-
-				{#if modules.includes('cms') || modules.includes('editorial')}
-					<CMS />
 				{/if}
 
 				{#if modules.includes('tagging')}
