@@ -1,69 +1,70 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-blueviolet" alt="Version">
-  <img src="https://img.shields.io/badge/license-MIT-purple" alt="License">
-  <img src="https://img.shields.io/badge/built_with-SvelteKit-orange" alt="Built with SvelteKit">
-  <img src="https://img.shields.io/badge/styling-TailwindCSS%20v4.1-blue" alt="Tailwind CSS">
-  <img src="https://img.shields.io/badge/automation-powered%20by%20Make.com%20%2B%20n8n-brightgreen" alt="Automation Stack">
-  <img src="https://img.shields.io/badge/foxified-yes-ff69b4" alt="Foxified">
+  <img src="https://img.shields.io/badge/app-client.fabalos.com-blue" alt="App URL">
+  <img src="https://img.shields.io/badge/status-live-success" alt="Status">
+  <img src="https://img.shields.io/badge/auth-Supabase-green" alt="Auth">
+  <img src="https://img.shields.io/badge/built_with-SvelteKit-orange" alt="Framework">
+  <img src="https://img.shields.io/badge/access-restricted-red" alt="Access">
 </p>
 
-# Fabalos.com
+# Fabalos Client Portal (The Vault)
 
-**Professional landing page and automation portfolio built with SvelteKit + TailwindCSS.**
+**The secure, auth-gated dashboard for Fabalos Automation clients.**
 
-This is the official website of Fabalos — a mechatronics engineer turned digital systems architect. This site showcases automation case studies, tools, and strategic services with a clean, modular design.
-
----
-
-## 🚀 Overview
-
-- Automation-first personal brand
-- Tagging case study (Make + GPT + Sheets)
-- Modular, scrollable layout
-- Professional presence built with intentional flow
+This repository contains the application layer for `client.fabalos.com`. It serves as the central hub for project tracking, asset delivery, and communication. Unlike the public portfolio, this is a functional web application powered by Supabase.
 
 ---
 
-## 🛠 Stack
+## 🔐 System Overview
 
-- SvelteKit
-- TailwindCSS
-- GPT + Make.com integrations (case study)
-- Obsidian + Notion for backend notes
-
----
-
-## 🧱 Pages
-
-| Route         | Description                               |
-|---------------|-------------------------------------------|
-| `/`           | Main landing page (what I do + CTA)       |
-| `/case-study` | Deep dive into Make/GPT product tagging   |
-| `+`           | Future tools page, blog, lore zone        |
+- **Role:** Client Interaction & Deliverable Management.
+- **Access:** Invite-only (Supabase Auth).
+- **Core Function:** Provides a "Peace of Mind" interface for clients to view project status, approve milestones, and download assets.
 
 ---
 
-## 🧠 Philosophy
+## 🛠 Tech Stack
 
-Fabalos.com is a space where clarity meets capability — automation is not just about saving time, it's about aligning energy and structure for creative flow.
-
----
-
-## 🔖 Versioning Strategy
-
-This project follows [Semantic Versioning](https://semver.org/):
-- `0.x.x` – Development / pre-release
-- `1.0.0` – Initial public launch
-- `x.y.z` - Subsequent updates (patches, features, or breaking changes)
-- Patch versions (`1.0.1`, etc.) for minor updates and fixes
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | SvelteKit | Application Logic & UI |
+| **Styling** | TailwindCSS v4.1 | Design System |
+| **Backend** | Supabase | Auth, Database (Postgres), Realtime |
+| **Storage** | Cloudflare R2 | Asset Storage (via API) |
+| **Security** | RLS Policies | Row-Level Security for Data Isolation |
 
 ---
 
-For full update history, see [CHANGELOG.md](./CHANGELOG.md).
+## 🧱 Key Features
+
+1.  **Secure Authentication:** Magic Link / Email login via Supabase.
+2.  **Project Timeline:** Real-time view of automation build phases.
+3.  **The Vault:** Secure file transfer for SOPs, scripts, and diagrams.
+4.  **Action Items:** Integrated task view for client-side requirements.
+
+---
+
+## ⚡ Development Setup
+
+```bash
+# 1. Clone the repository
+git clone [repo-url]
+
+# 2. Install dependencies
+npm install
+
+# 3. Setup Environment Variables (.env)
+PUBLIC_SUPABASE_URL=...
+PUBLIC_SUPABASE_ANON_KEY=...
+
+# 4. Run local server
+npm run dev
+
+---
+
+## 🔖 Versioning
+v1.0.0 - Initial Beta Release (Auth + Dashboard)
 
 ---
 
 ## 📄 License
-
-MIT  
-Use freely, credit appreciated.
+Proprietary. All rights reserved by Fabalos Automation. Unauthorized copying or distribution is strictly prohibited.

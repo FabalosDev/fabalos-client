@@ -1,87 +1,72 @@
 # Changelog
 
-All notable changes to this template are documented here.
+All notable changes to this project will be documented in this file.
 
-This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)  
-and adheres to [Semantic Versioning](https://semver.org/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-# 📦 Change Log — v1.1.0: Fabalos Launch
+## [1.1.0] - 2025-06-21 (Fabalos Launch)
 
-**Version:** `1.1.0`  
-**Date:** `2025-06-21`  
-**Status:** ✅ Stable & Deploy-Ready  
+**Status:** ✅ Stable & Deploy-Ready
 **Description:** First public-ready release of the **Fabalos Automation Portfolio**. Modular, styled, and emotionally coded.
 
----
+### ✅ Features
+- 🌐 **Homepage Hero:** Added logo, call-to-actions, and responsive layout.
+- 🧠 **About Section:** Added "Fabalos Automation" purpose and philosophy.
+- ⚙️ **Case Study:** Implemented card layout (1 active, expandable).
+- 📬 **Contact:** Added "Let’s Talk" CTA section with styled buttons.
+- 📱 **Navigation:** Responsive hamburger menu + slide-in for mobile.
+- 🖌️ **Tailwind CSS v4:** Architecture setup with modular styles (`layout.css`, `theme.css`, `global.css`).
+- 🧪 **Utilities:** Established class setup (`bg-primary`, `text-soft`, `btn-primary`, `btn-ghost`).
+- 💻 **DevOps:** VS Code + Git integration (profile scripting `fabagreet`, `fabaclean`).
 
-## ✅ Features
+### 🧰 Technical Fixes
+- Resolved `border-primary` utility issues.
+- Removed recursive import loop in `theme.css`.
+- Fixed `chcp` encoding bug in PowerShell profile.
+- Enabled UTF-8 emoji rendering in terminal.
+- Cleaned and aligned Vite + Tailwind plugins.
 
-- 🌐 **Homepage Hero** with logo, call-to-actions, and responsive layout  
-- 🧠 **About Section** explaining Fabalos Automation purpose  
-- ⚙️ **Case Study Cards** layout (1 active, expandable)  
-- 📬 **Email CTA Section**: “Let’s Talk” with styled buttons  
-- 📱 **Responsive Navigation** with mobile hamburger + slide-in  
-- 🖌️ **Tailwind CSS v4** architecture with modular styles (`layout.css`, `theme.css`, `global.css`)  
-- 🧪 **Utility class setup**: `bg-primary`, `text-soft`, `btn-primary`, `btn-ghost`, etc.  
-- 💻 **VS Code + Git integration**: proper encoding, profile scripting (`fabagreet`, `fabaclean`)  
-
----
-
-## 🧰 Technical Fixes
-
-- ✅ Resolved `border-primary` utility issues  
-- ✅ Removed recursive import loop (`theme.css`)  
-- ✅ Fixed `chcp` encoding bug in PowerShell profile  
-- ✅ Emojis now render in UTF-8 terminal  
-- ✅ Vite + Tailwind plugins cleaned and aligned  
-
----
-
-## 🚧 Known Work-in-Progress
-
-- [ ] Final polish for **Case Study Detail Pages**  
-- [ ] Add **Favicon metadata**  
-- [ ] Add **SEO Metadata** in `<svelte:head>`  
-- [ ] Footer and 404 page  
-- [ ] Blog or journal section (future idea)  
+### 🚧 Known Work-in-Progress
+- [ ] Final polish for **Case Study Detail Pages**.
+- [ ] Add **Favicon metadata**.
+- [ ] Add **SEO Metadata** in `<svelte:head>`.
+- [ ] Build Footer and 404 page.
+- [ ] **Next Target:** `v1.2.0` (Second case study integration).
 
 ---
-
-## ⏫ Version Strategy
-
-Using **Semantic Versioning (SemVer)**:  
-`MAJOR.MINOR.PATCH`
-
-- `MAJOR`: Breaking changes / new site structure  
-- `MINOR`: New pages or features (e.g., second case study)  
-- `PATCH`: Visual tweaks, bugfixes  
-
-**Next target version:** `1.1.0` = when 2nd case study + metadata polishing is done.
-
----
-
-## 📌 Git Tag (optional)
-After pushing to GitHub:
-```bash
-git tag -a v1.0.0 -m "🎉 Fabalos v1.0.0 - First public-ready release"
-git push origin v1.0.0
-```
 
 ## [0.2.0] - 2025-06-18
 
 ### Removed
-- Tailwind v4 CSS-first config established
-- Global styles + layout scaffold complete
-- Section components prepared: Hero, About, Services
-- Removed tailwind.config.js in favor of `@theme` directive
+- `tailwind.config.js` (Removed in favor of CSS-first `@theme` directive).
 
-## [0.1.0] – 2025-06-18
+### Changed
+- Established Tailwind v4 CSS-first config.
+- Completed global styles + layout scaffold.
+- Prepared section components: Hero, About, Services.
+
+---
+
+## [0.1.0] - 2025-06-18
 
 ### Added
-- Initial landing page structure with SvelteKit
-- Global CSS with custom Fabalos palette + fonts
-- README and project description
-- Placeholder for case study route
+- Initial landing page structure with SvelteKit.
+- Global CSS with custom Fabalos palette + fonts.
+- README and project description.
+- Placeholder for case study route.
 
+---
+
+## 📌 Release Workflow
+
+To tag and push a new version:
+
+```bash
+# Tag the version
+git tag -a v1.1.0 -m "🎉 Fabalos v1.1.0 - Public Launch"
+
+# Push to origin
+git push origin v1.1.0
