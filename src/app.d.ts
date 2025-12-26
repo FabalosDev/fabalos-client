@@ -1,12 +1,32 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
+/// <reference types="@sveltejs/kit" />
+
+import type { SupabaseClient, Session, User } from '@supabase/supabase-js';
+
 declare global {
 	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
+		interface Locals {
+			// 🛡️ The core Supabase client for DB operations
+			supabase: SupabaseClient;
+
+			// 🛡️ The helper function we defined in hooks.server.ts
+			// It returns a Promise because getSession() is asynchronous
+			getSession(): Promise<Session | null>;
+
+			// 🛡️ Standard session and user objects for quick access
+			session: Session | null;
+			user: User | null;
+		}
+
+		// This allows $page.data to have types in your Svelte components
+		interface PageData {
+			supabase: SupabaseClient; // 👈 ADD THIS LINE
+			session: Session | null;
+			user: User | null;
+			tenant?: {
+				tenant_slug: string;
+				display_name: string;
+			};
+		}
 	}
 }
 

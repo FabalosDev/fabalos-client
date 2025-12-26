@@ -1,85 +1,35 @@
-<script>
-  import { slide } from 'svelte/transition';
-  let isOpen = false;
+<header class="fixed top-0 w-full z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5">
+  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between font-mono">
 
-  let links = [
-    { label: 'About', href: '#about' },
-    { label: 'Case Study', href: '#case-study' },
-    { label: 'Tech Stack', href: '#stack' },
-    { label: 'Contact', href: '#contact' }
-  ];
-</script>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+        <span class="text-white font-bold tracking-tighter uppercase text-sm">Fabalos // DevLab</span>
+      </div>
+      <div class="hidden sm:block h-4 w-[1px] bg-white/10"></div>
+      <span class="text-[9px] text-white/30 hidden md:inline uppercase tracking-widest">State: Stable_v1.0.4</span>
+    </div>
 
-<header
-  class="w-full sticky top-0 z-50 border-b border-starlight bg-background/90 backdrop-blur-sm text-text-main"
->
-  <div class="container flex items-center justify-between py-4 px-6">
-    
-    <!-- 🔰 Logo -->
-    <a href="/" aria-label="Fabalos Home" class="flex items-center gap-2">
-      <img
-        src="/logos/fabalos-logo.png"
-        alt="Fabalos Automation Logo"
-        class="h-12 w-auto"
-      />
-    </a>
-
-    <!-- 🌐 Desktop Nav -->
-    <nav class="hidden md:flex gap-6 font-medium text-smooth font-body">
-{#each links as { label, href }}
-  <div class="group relative inline-block">
-    <a
-      href={href}
-      class="font-heading text-smooth hover:text-primary transition-colors duration-300"
-    >
-      <span class="relative z-10">{label}</span>
-    </a>
-    <span
-      class="absolute left-0 bottom-0 h-[2px] w-full bg-red-500 rounded-full scale-x-0 group-hover:scale-x-100 transform origin-left transition-transform duration-300"
-    ></span>
-  </div>
-{/each}
-
+    <nav class="hidden md:flex items-center gap-10">
+      <a href="#operations" class="text-[10px] text-white/40 hover:text-blue-400 transition-colors uppercase tracking-[0.2em]">
+        <span class="text-blue-500/50 mr-1">00_</span>Operations
+      </a>
+      <a href="#infrastructure" class="text-[10px] text-white/40 hover:text-blue-400 transition-colors uppercase tracking-[0.2em]">
+        <span class="text-blue-500/50 mr-1">01_</span>Infrastructure
+      </a>
+      <a href="#protocol" class="text-[10px] text-white/40 hover:text-blue-400 transition-colors uppercase tracking-[0.2em]">
+        <span class="text-blue-500/50 mr-1">02_</span>Protocol
+      </a>
     </nav>
 
-    <!-- 📱 Hamburger Icon -->
-    <button
-      class="md:hidden focus:outline-none"
-      on:click={() => (isOpen = !isOpen)}
-      aria-label="Toggle navigation"
-    >
-      <svg
-        class="w-6 h-6 text-primary"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {#if isOpen}
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        {:else}
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-        {/if}
-      </svg>
-    </button>
+    <div class="flex items-center gap-4">
+      <div class="hidden lg:block px-2 py-1 bg-white/[0.03] border border-white/10 rounded text-[9px] text-white/40 uppercase font-mono">
+        LOC: PH_MNL_01
+      </div>
+      <a href="/login" class="group flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-4 py-2 uppercase tracking-tighter transition-all">
+        <span>Access_Vault</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 group-hover:translate-x-1 transition-transform"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
   </div>
-
-  <!-- 📱 Slide-In Mobile Menu -->
-  {#if isOpen}
-    <nav
-      in:slide={{ duration: 250 }}
-      out:slide={{ duration: 200 }}
-      class="md:hidden px-6 pb-6 pt-2 bg-background text-smooth space-y-4 transition-all duration-300"
-    >
-      {#each links as { label, href }}
-        <a
-          href={href}
-          class="block py-2 border-b border-starlight hover:text-primary transition"
-          on:click={() => (isOpen = false)}
-        >
-          {label}
-        </a>
-      {/each}
-    </nav>
-  {/if}
 </header>
