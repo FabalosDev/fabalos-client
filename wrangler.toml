@@ -4,3 +4,7 @@ compatibility_date = "2024-01-01"
 [[r2_buckets]]
 binding = "CLIENT_ASSETS"
 bucket_name = "fabalos-client-assets"
+
+[vars]
+# ... existing vars ...
+N8N_WEBHOOK_URL = "https://floflux.fabalos.com/webhook/client-activity"

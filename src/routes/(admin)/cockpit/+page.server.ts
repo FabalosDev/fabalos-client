@@ -40,6 +40,9 @@ export const actions = {
 		const clientEmail = formData.get('client_email') as string;
 		const tenantSlug = formData.get('tenant_slug') as string;
 
+		// 🎨 NEW: Capture the brand color (Default to Foxther Blue if missing)
+		const brandColor = (formData.get('brand_color') as string) || '#3b82f6';
+
 		// 1. CREATE CLIENT IDENTITY
 		const { data: client, error: clientError } = await supabase
 			.from('authorized_clients')
@@ -64,6 +67,7 @@ export const actions = {
 			{
 				client_id: client.id,
 				tenant_slug: tenantSlug,
+				brand_color: brandColor, // <--- INJECTED HERE
 				storage_health: 'healthy',
 				database_version: 'Supabase_v1.0',
 				active_modules: ['files', 'reports', 'crm'] // Standard Lane 2 Starter Pack

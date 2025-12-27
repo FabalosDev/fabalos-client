@@ -1,5 +1,3 @@
-/// <reference types="@sveltejs/kit" />
-
 import type { SupabaseClient, Session, User } from '@supabase/supabase-js';
 
 declare global {
@@ -8,25 +6,33 @@ declare global {
 			// 🛡️ The core Supabase client for DB operations
 			supabase: SupabaseClient;
 
-			// 🛡️ The helper function we defined in hooks.server.ts
-			// It returns a Promise because getSession() is asynchronous
+			// 🛡️ The helper function defined in hooks.server.ts
 			safeGetSession: () => Promise<{ session: Session | null; user: User | null }>;
-		}
 
-			// 🛡️ Standard session and user objects for quick access
+			// 🛡️ Quick access objects for server-side logic
 			session: Session | null;
 			user: User | null;
 		}
 
-		// This allows $page.data to have types in your Svelte components
+		// 🛡️ Data accessible via $page.data in Svelte components
 		interface PageData {
-			supabase: SupabaseClient; // 👈 ADD THIS LINE
 			session: Session | null;
 			user: User | null;
 			tenant?: {
 				tenant_slug: string;
 				display_name: string;
 			};
+		}
+
+		// 🛡️ CLOUDFLARE BINDINGS: Essential for R2 access
+		interface Platform {
+			env: {
+				CLIENT_ASSETS: R2Bucket; // 👈 Matches your wrangler.toml binding
+			};
+			context: {
+				waitUntil(promise: Promise<any>): void;
+			};
+			caches: CacheStorage & { default: Cache };
 		}
 	}
 }

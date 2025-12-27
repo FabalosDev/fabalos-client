@@ -1,2 +1,40 @@
-/* ===================== app.css ===================== */ 
-@import './global.css';
+@import "tailwindcss";
+
+/* 1. THEME CONFIGURATION */
+@theme {
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-text-main: var(--text-main);
+  --color-text-soft: var(--text-soft);
+
+  --font-heading: 'JetBrains Mono', monospace;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* 2. DYNAMIC VARIABLES (The Injection Layer) */
+@layer base {
+  :root {
+    --primary: #3b82f6;
+    --accent: #10b981;
+    --warning: #fbbf24;
+    --error: #ef4444;
+    --background: #0f172a;
+    --surface: #1e293b;
+    --text-main: #f1f5f9;
+    --text-soft: #94a3b8;
+  }
+
+  html {
+    @apply font-body bg-background text-text-main antialiased;
+  }
+}
+
+/* 3. COMPONENT CLASSES */
+/* Now @apply will work guaranteed */
+.h1-title {
+  @apply font-heading text-primary text-4xl font-bold;
+}
