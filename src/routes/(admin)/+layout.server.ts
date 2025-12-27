@@ -1,7 +1,8 @@
 import { redirect, error } from '@sveltejs/kit';
 
-export const load = async ({ locals: { supabase, getSession } }) => {
-	const session = await getSession();
+export const load = async ({ locals: { safeGetSession } }) => {
+	// ⚡ FIX: Use the new secure function
+	const { session, user } = await safeGetSession();
 
 	// 1. BASIC AUTH CHECK: Are they even logged in?
 	if (!session) {
@@ -9,17 +10,16 @@ export const load = async ({ locals: { supabase, getSession } }) => {
 	}
 
 	// 2. IDENTITY CHECK: Is this Frank?
-	// We use the email from your Saved Information as the source of truth.
-	const isAdmin = session.user.email === 'frank.2.abalos@gmail.com';
+	// Note: We use the secure 'user' object returned from safeGetSession
+	const isAdmin = user?.email === 'frank.2.abalos@gmail.com';
 
 	if (!isAdmin) {
-		// We throw a 404 instead of a 403.
-		// This makes the page appear non-existent to hackers/curious clients.
+		// We throw a 404 instead of a 403 to hide the route.
 		throw error(404, 'Not Found');
 	}
 
 	return {
-		user: session.user,
+		user,
 		role: 'ADMIN_SUPERUSER'
 	};
 };

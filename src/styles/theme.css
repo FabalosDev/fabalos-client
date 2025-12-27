@@ -1,26 +1,55 @@
-@theme {
-  /* 🎨 Core Palette */
-  --primary: #3b82f6;         /* Foxther Blue */
-  --accent: #10b981;          /* Emerald Accent */
-  --warning: #fbbf24;         /* Yellow for alerts */
-  --error: #ef4444;           /* Red for errors */
-  --background: #0f172a;      /* Deep cosmic background */
-  --surface: #1e293b;         /* Card / panel surface */
-  --text-main: #f1f5f9;       /* Light readable text */
-  --text-soft: #94a3b8;       /* Muted for secondary UI */
+@layer base {
+  :root {
+    /* 1. DEFINE VARIABLES (The Defaults) */
+    /* We define them here so they can be overridden dynamically in +page.svelte */
 
-  /* 🦊 Extras */
-  --foxther-glow: #3b82f6;
-  --button-glow: #2563eb;
+    --primary: #3b82f6;         /* Foxther Blue */
+    --accent: #10b981;          /* Emerald */
+    --warning: #fbbf24;
+    --error: #ef4444;
 
-  /* ✨ Fonts */
-  --font-heading: 'JetBrains Mono', monospace;
-  --font-body: 'Inter', sans-serif;
-  --font-alt: 'JetBrains Mono', monospace;
-  --font-display: 'JetBrains Mono', monospace;
+    --background: #0f172a;      /* Deep Cosmic */
+    --surface: #1e293b;         /* Card Surface */
+
+    --text-main: #f1f5f9;
+    --text-soft: #94a3b8;
+
+    --foxther-glow: #3b82f6;
+    --button-glow: #2563eb;
+
+    /* Fonts (Static is usually fine, but variables work too) */
+    --font-heading: 'JetBrains Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
 }
 
-/* 🌌 Global base style (can be enhanced later) */
+@theme {
+  /* 2. CONFIGURE TAILWIND (The Mapping) */
+  /* We map the --color-* namespace to our variables */
+
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+
+  /* Note: naming utilities 'text-main' results in class 'text-text-main'
+     You might prefer --color-main: var(--text-main) for 'text-main' */
+  --color-text-main: var(--text-main);
+  --color-text-soft: var(--text-soft);
+
+  --color-foxther-glow: var(--foxther-glow);
+  --color-button-glow: var(--button-glow);
+
+  /* Fonts */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+}
+
+/* 3. GLOBAL STYLES */
+/* These now reference the variables correctly */
 html {
   font-family: var(--font-body);
 }

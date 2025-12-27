@@ -3,7 +3,7 @@ import { type Handle, redirect } from '@sveltejs/kit';
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	// 1. INITIALIZE: Create the Supabase client
+	// 1. INITIALIZE Supabase
 	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
 		cookies: {
 			getAll: () => event.cookies.getAll(),
@@ -15,29 +15,44 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	});
 
-	// 2. DEFINE: Helper function
-	event.locals.getSession = async () => {
+	// 2. DEFINE: Secure Session Helper (The Fix)
+	// This replaces the old 'getSession' with a server-validated check.
+	event.locals.safeGetSession = async () => {
 		const {
 			data: { session }
 		} = await event.locals.supabase.auth.getSession();
-		return session;
+
+		if (!session) {
+			return { session: null, user: null };
+		}
+
+		// 🛡️ SECURITY CHECK: Validate token with Supabase Auth Server
+		const {
+			data: { user },
+			error
+		} = await event.locals.supabase.auth.getUser();
+
+		if (error) {
+			// Token is fake or expired -> wipe it
+			return { session: null, user: null };
+		}
+
+		return { session, user };
 	};
 
-	// 3. EXECUTE: Safety Check
-	const session = await event.locals.getSession();
+	// 3. PROTECTED ROUTES
+	const { session, user } = await event.locals.safeGetSession();
 	const path = event.url.pathname;
 
-	// 🛡️ AUTO-PILOT: Auth handling
+	// Redirect authenticated users away from login
 	if (session && path === '/login') {
-		throw redirect(303, '/portal/test'); // Updated to your current vault path
+		throw redirect(303, '/portal/test');
 	}
 
-	// 🛑 4. ADMIN SHIELD: Pure Server-Side Protection
-	// Only you (frank.2.abalos@gmail.com) can enter the dashboard.
+	// 🛑 ADMIN SHIELD
 	if (path.startsWith('/dashboard')) {
-		if (!session || session.user.email !== 'frank.2.abalos@gmail.com') {
-			// We return a 404 instead of a redirect.
-			// This hides the existence of the admin route from unauthorized users.
+		// Strict check: Must have session AND specific email
+		if (!session || user?.email !== 'frank.2.abalos@gmail.com') {
 			return new Response('Not Found', { status: 404 });
 		}
 	}

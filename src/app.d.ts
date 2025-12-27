@@ -10,7 +10,8 @@ declare global {
 
 			// 🛡️ The helper function we defined in hooks.server.ts
 			// It returns a Promise because getSession() is asynchronous
-			getSession(): Promise<Session | null>;
+			safeGetSession: () => Promise<{ session: Session | null; user: User | null }>;
+		}
 
 			// 🛡️ Standard session and user objects for quick access
 			session: Session | null;

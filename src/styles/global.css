@@ -1,19 +1,23 @@
 /* ===================== global.css ===================== */
-
-/* 🎯 Fonts */
+/* 🎯 1. FONTS MUST BE FIRST */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap');
 
-/* 🎨 Tailwind Core */
+/* 🎨 2. Tailwind Core */
 @import "tailwindcss";
+
+/* 🛠 3. Custom Layers */
 @import "./theme.css";
 @import "./layout.css";
 
-@tailwind utilities;
+@layer base {
+  html {
+    font-family: var(--font-body);
+    background-color: var(--background);
+    color: var(--text-main);
+  }
 
-/* 🔤 Font Defaults */
-html {
-  font-family: var(--font-body);
-}
-h1, h2, h3 {
-  font-family: var(--font-heading);
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    color: var(--primary);
+  }
 }

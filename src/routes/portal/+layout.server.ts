@@ -1,7 +1,8 @@
 import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ locals: { getSession } }) => {
-	const session = await getSession();
+export const load = async ({ locals: { safeGetSession } }) => {
+	// ⚡ FIX: Use the new secure function
+	const { session, user } = await safeGetSession();
 
 	// 1. THE BOUNCER
 	// If no valid session exists, kick them out to login immediately.
@@ -10,10 +11,8 @@ export const load = async ({ locals: { getSession } }) => {
 	}
 
 	// 2. THE PASSTHROUGH
-	// If they are allowed in, pass their User Data down to every child page.
-	// This means you don't have to re-fetch "Who am I?" in the sub-pages.
 	return {
 		session,
-		user: session.user
+		user // We can pass the secure user object directly
 	};
 };

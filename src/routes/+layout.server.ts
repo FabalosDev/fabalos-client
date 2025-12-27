@@ -1,12 +1,12 @@
-// src/routes/+layout.server.ts
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals: { getSession } }) => {
-	// 1. Passive Check: Just get the session
-	const session = await getSession();
+export const load: LayoutServerLoad = async ({ locals: { safeGetSession } }) => {
+	// 1. Use the new SAFE session checker we created
+	const { session, user } = await safeGetSession();
 
-	// 2. Pass it down: Don't redirect here! Let hooks or specific pages decide.
+	// 2. Pass it down to every page in the app
 	return {
-		session
+		session,
+		user
 	};
 };
