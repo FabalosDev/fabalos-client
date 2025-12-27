@@ -6,6 +6,7 @@
 <div class="min-h-screen bg-slate-950 font-mono text-slate-200">
 	<nav class="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/50 backdrop-blur">
 		<div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+
 			<div class="flex items-center gap-4">
 				<a href="/portal/test" class="text-xs text-slate-500 transition-colors hover:text-white">
 					← BACK TO VAULT
@@ -16,13 +17,40 @@
 				</h1>
 			</div>
 
-			<div class="flex items-center gap-2">
-				<span
-					class="h-2 w-2 rounded-full {project.storage_health === 'healthy'
-						? 'animate-pulse bg-green-500'
-						: 'bg-red-500'}"
-				></span>
-				<span class="text-xs font-bold text-slate-400 uppercase">System Online</span>
+			<div class="flex items-center gap-6">
+				<div class="flex items-center gap-2">
+					<span
+						class="h-2 w-2 rounded-full {project.storage_health === 'healthy'
+							? 'animate-pulse bg-green-500'
+							: 'bg-red-500'}"
+					></span>
+					<span class="text-xs font-bold text-slate-400 uppercase">System Online</span>
+				</div>
+
+				<div class="h-4 w-px bg-slate-800"></div>
+
+				<form action="/auth/logout" method="POST">
+					<button
+						type="submit"
+						class="flex items-center gap-2 text-xs font-bold text-red-500 hover:text-red-400 uppercase transition-colors"
+					>
+						<span>Disconnect</span>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="12"
+							height="12"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline
+								points="16 17 21 12 16 7"
+							/><line x1="21" x2="9" y1="12" y2="12" /></svg
+						>
+					</button>
+				</form>
 			</div>
 		</div>
 	</nav>
@@ -79,31 +107,51 @@
 					</div>
 				{/if}
 			</div>
+
 			<div class="mt-8 border-t border-slate-800 pt-8">
-  <h2 class="text-xl font-bold text-white mb-6 tracking-tight">Delivery Vault</h2>
+				<h2 class="mb-6 text-xl font-bold tracking-tight text-white">Delivery Vault</h2>
 
-  <div class="grid gap-4">
-    {#each data.files as file}
-      <div class="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-lg group hover:border-blue-500 transition-all">
-        <div class="flex items-center gap-4">
-          <div class="p-2 bg-slate-800 rounded text-blue-400 group-hover:text-white transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          </div>
-          <div>
-            <p class="text-sm font-bold text-slate-200">{file.key.split('/').pop()}</p>
-            <p class="text-xs text-slate-500 uppercase">{file.size} • {new Date(file.updated).toLocaleDateString()}</p>
-          </div>
-        </div>
+				<div class="grid gap-4">
+					{#each data.files as file}
+						<div
+							class="group flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900 p-4 transition-all hover:border-blue-500"
+						>
+							<div class="flex items-center gap-4">
+								<div
+									class="rounded bg-slate-800 p-2 text-blue-400 transition-colors group-hover:text-white"
+								>
+									<svg
+										class="h-5 w-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+										><path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+										></path></svg
+									>
+								</div>
+								<div>
+									<p class="text-sm font-bold text-slate-200">{file.key.split('/').pop()}</p>
+									<p class="text-xs text-slate-500 uppercase">
+										{file.size} • {new Date(file.updated).toLocaleDateString()}
+									</p>
+								</div>
+							</div>
 
-        <button class="px-4 py-2 text-xs font-bold uppercase bg-slate-800 hover:bg-blue-600 rounded transition-colors">
-          Download
-        </button>
-      </div>
-    {:else}
-      <p class="text-slate-600 italic text-sm">No assets found in this vault.</p>
-    {/each}
-  </div>
-</div>
+							<button
+								class="rounded bg-slate-800 px-4 py-2 text-xs font-bold uppercase transition-colors hover:bg-blue-600"
+							>
+								Download
+							</button>
+						</div>
+					{:else}
+						<p class="text-sm italic text-slate-600">No assets found in this vault.</p>
+					{/each}
+				</div>
+			</div>
 		</div>
 	</main>
 </div>

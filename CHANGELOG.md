@@ -7,56 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [1.1.0] - 2025-06-21 (Fabalos Launch)
+## [0.1.0] - 2025-12-26 (The Vault Beta)
 
-**Status:** ✅ Stable & Deploy-Ready
-**Description:** First public-ready release of the **Fabalos Automation Portfolio**. Modular, styled, and emotionally coded.
+**Status:** ✅ Live & Secure
+**Description:** Initial release of the **Fabalos Client Portal**. A secure, auth-gated dashboard for project tracking and asset delivery.
 
 ### ✅ Features
-- 🌐 **Homepage Hero:** Added logo, call-to-actions, and responsive layout.
-- 🧠 **About Section:** Added "Fabalos Automation" purpose and philosophy.
-- ⚙️ **Case Study:** Implemented card layout (1 active, expandable).
-- 📬 **Contact:** Added "Let’s Talk" CTA section with styled buttons.
-- 📱 **Navigation:** Responsive hamburger menu + slide-in for mobile.
-- 🖌️ **Tailwind CSS v4:** Architecture setup with modular styles (`layout.css`, `theme.css`, `global.css`).
-- 🧪 **Utilities:** Established class setup (`bg-primary`, `text-soft`, `btn-primary`, `btn-ghost`).
-- 💻 **DevOps:** VS Code + Git integration (profile scripting `fabagreet`, `fabaclean`).
+- 🔐 **Auth System:** Supabase SSR integration with Magic Link/Email login.
+- 🛡️ **Admin Shield:** Server-side protection in `hooks.server.ts` restricting `/dashboard` to admin email.
+- 📂 **The Vault:** Cloudflare R2 integration for secure asset downloads and file listing.
+- 📊 **Project Timeline:** Real-time status indicators (Healthy/Critical) and database versioning.
+- 🎨 **UI Architecture:** Tailwind CSS v4.1 with Slate/Dark mode design system.
+- ⚡ **Performance:** SvelteKit logic for data streaming and state management.
 
 ### 🧰 Technical Fixes
-- Resolved `border-primary` utility issues.
-- Removed recursive import loop in `theme.css`.
-- Fixed `chcp` encoding bug in PowerShell profile.
-- Enabled UTF-8 emoji rendering in terminal.
-- Cleaned and aligned Vite + Tailwind plugins.
+- Implemented `redirect` logic for unauthenticated sessions.
+- configured `svelte-adapter-cloudflare` for edge deployment.
+- Established global typography and utility classes for the dashboard.
 
 ### 🚧 Known Work-in-Progress
-- [ ] Final polish for **Case Study Detail Pages**.
-- [ ] Add **Favicon metadata**.
-- [ ] Add **SEO Metadata** in `<svelte:head>`.
-- [ ] Build Footer and 404 page.
-- [ ] **Next Target:** `v1.2.0` (Second case study integration).
+- [ ] Refine RLS (Row Level Security) policies for multi-tenant isolation.
+- [ ] Build 404/Unauthorized redirect pages.
+- [ ] Add SEO/Favicon metadata.
+- [ ] **Next Target:** `v0.1.1` (Client specific module integration).
 
 ---
 
-## [0.2.0] - 2025-06-18
-
-### Removed
-- `tailwind.config.js` (Removed in favor of CSS-first `@theme` directive).
-
-### Changed
-- Established Tailwind v4 CSS-first config.
-- Completed global styles + layout scaffold.
-- Prepared section components: Hero, About, Services.
-
----
-
-## [0.1.0] - 2025-06-18
+## [0.0.1] - 2025-06-18
 
 ### Added
-- Initial landing page structure with SvelteKit.
-- Global CSS with custom Fabalos palette + fonts.
-- README and project description.
-- Placeholder for case study route.
+- Initial repository scaffolding (SvelteKit + TypeScript).
+- Tailwind v4 configuration.
+- Basic Supabase client initialization.
 
 ---
 
@@ -66,7 +48,7 @@ To tag and push a new version:
 
 ```bash
 # Tag the version
-git tag -a v1.1.0 -m "🎉 Fabalos v1.1.0 - Public Launch"
+git tag -a v1.0.0 -m "🔐 Fabalos Client Portal v1.0.0 - Beta"
 
 # Push to origin
-git push origin v1.1.0
+git push origin v1.0.0
