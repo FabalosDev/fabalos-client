@@ -27,14 +27,20 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const session = await event.locals.getSession();
 	const path = event.url.pathname;
 
-	// 🛡️ AUTO-PILOT: If user is logged in and tries to visit Login, push to Vault
-	// This was disabled during debug, now we re-enable it.
+	// 🛡️ AUTO-PILOT: Auth handling
 	if (session && path === '/login') {
-		throw redirect(303, '/vault');
+		throw redirect(303, '/portal/test'); // Updated to your current vault path
 	}
 
-	// Note: We REMOVED the "Guard" logic here because we moved it
-	// to 'src/routes/vault/+layout.server.ts'. This prevents conflicts!
+	// 🛑 4. ADMIN SHIELD: Pure Server-Side Protection
+	// Only you (frank.2.abalos@gmail.com) can enter the dashboard.
+	if (path.startsWith('/dashboard')) {
+		if (!session || session.user.email !== 'frank.2.abalos@gmail.com') {
+			// We return a 404 instead of a redirect.
+			// This hides the existence of the admin route from unauthorized users.
+			return new Response('Not Found', { status: 404 });
+		}
+	}
 
 	return resolve(event);
 };

@@ -1,13 +1,10 @@
-import adapter from '@sveltejs/adapter-vercel';
+import adapter from '@sveltejs/adapter-cloudflare';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-export default {
-  preprocess: vitePreprocess(),
-
-  kit: {
-    adapter: adapter(),
-    // You can add other options here like:
-    // paths: { base: '/your-subpath' },
-    // prerender: { entries: [] },
-  }
+const config = {
+	preprocess: vitePreprocess(),
+	kit: {
+		adapter: adapter()
+	}
 };
+export default config;
