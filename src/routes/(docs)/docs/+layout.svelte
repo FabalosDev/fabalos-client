@@ -5,6 +5,7 @@
   $: path = $page.url.pathname;
 </script>
 
+
 <div class="flex gap-12">
   <aside class="hidden lg:block w-64 shrink-0 sticky top-24">
     {#each DOCS_NAV as section}
@@ -32,3 +33,5 @@
     <slot />
   </main>
 </div>
+
+
