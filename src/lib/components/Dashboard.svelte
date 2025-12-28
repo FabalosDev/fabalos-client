@@ -1,127 +1,124 @@
 <script lang="ts">
-  // Props would typically come from your +page.server.ts (Supabase)
-  export let clientName = "Fabalos Engineering";
-  export let projectPhase = "Phase 2: MVP Build";
-  export let progress = 33;
-  export let systemStatus = "OPERATIONAL"; // OPERATIONAL, DEGRADED, MAINTENANCE
+  import HeaderClient from '$lib/components/HeaderClient.svelte';
+  import TicketModal from '$lib/components/TicketModal.svelte';
+  import Toast from '$lib/components/Toast.svelte';
+  import SpaceTimeline from '$lib/components/SpaceTimeline.svelte';
+  import Starfield from '$lib/components/Starfield.svelte';
+  import Sidebar from '$lib/components/Sidebar.svelte'; // 👈 NEW
 
-  const milestones = [
-    { id: '01', title: 'Discovery & Proposal', status: 'COMPLETE', date: 'Dec 13' },
-    { id: '02', title: 'Downpayment & Onboarding', status: 'COMPLETE', date: 'Dec 20' },
-    { id: '03', title: 'Building MVP (Internal Audit)', status: 'ACTIVE', date: 'Jan 10' },
-    { id: '04', title: 'UAT - User Acceptance', status: 'LOCKED', date: 'Jan 17' },
-    { id: '05', title: 'Production Handover', status: 'LOCKED', date: 'Jan 24' }
-  ];
+  export let project: any;
+  export let milestones: any[] = [];
+  export let files: any[] = [];
+  export let form: any;
 
-  // Helper for status colors
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'COMPLETE': return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
-      case 'ACTIVE': return 'text-blue-400 bg-blue-400/10 border-blue-400/20 animate-pulse';
-      case 'LOCKED': return 'text-slate-600 bg-slate-800/50 border-slate-700';
-      default: return 'text-slate-400';
-    }
-  };
+  let showTicketModal = false;
+  let currentTheme = { primary: '#3b82f6', accent: '#10b981', background: '#000000', surface: '#0a0a0a' };
+
+  $: theme = { ...(project?.theme_settings || {}), ...currentTheme };
+
+  function randomizeTheme() {
+    const presets = [
+       { primary: '#3b82f6', accent: '#10b981', background: '#050505', surface: '#0a0a0a' },
+       { primary: '#c084fc', accent: '#f472b6', background: '#13041c', surface: '#220930' },
+       { primary: '#38bdf8', accent: '#818cf8', background: '#020617', surface: '#0f172a' },
+    ];
+    currentTheme = { ...currentTheme, ...presets[Math.floor(Math.random() * presets.length)] };
+  }
+
+  function getStatusTheme(status: string) {
+    const s = status?.toLowerCase() || '';
+    if (s === 'healthy' || s === 'active') return { bg: 'bg-accent', text: 'text-accent' };
+    if (s === 'maintenance') return { bg: 'bg-warning', text: 'text-warning' };
+    return { bg: 'bg-error', text: 'text-error' };
+  }
+
+  $: statusStyle = getStatusTheme(project?.storage_health);
 </script>
 
-<div class="min-h-screen bg-[#050505] text-slate-300 font-sans p-6 md:p-12">
+<div class="flex min-h-screen font-sans text-text-main selection:bg-primary/30"
+  style="
+    --primary: {theme.primary};
+    --accent: {theme.accent};
+    --background: {theme.background};
+    --surface: {theme.surface};
+    background-color: #020617;
+  "
+>
+  <div class="fixed inset-0 z-0 pointer-events-none" style="background: radial-gradient(circle at 60% 0%, rgba(var(--primary), 0.1) 0%, transparent 60%);"></div>
+  <Starfield />
+  <div class="fixed inset-0 z-0 pointer-events-none opacity-[0.2] mix-blend-overlay" style="background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E&quot;);"></div>
 
-  <div class="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+<Toast />
 
-  <div class="relative max-w-5xl mx-auto space-y-12">
+<Sidebar
+    modules={project.active_modules || []}
+    slug={project.tenant_slug}
+  />
 
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-6">
-      <div class="space-y-2">
-        <div class="flex items-center gap-3">
-          <div class="h-2 w-2 rounded-full bg-blue-500"></div>
-          <span class="text-xs font-mono text-blue-500 tracking-widest uppercase">Secure Client Uplink</span>
-        </div>
-        <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">{clientName}</h1>
-        <p class="text-slate-500 text-sm">Authorized Environment: <span class="text-slate-300">Production</span></p>
-      </div>
+  <div class="ml-64 flex-1 flex flex-col relative z-10">
 
-      <div class="flex items-center gap-4 bg-slate-900/50 border border-slate-800 p-3 rounded-lg backdrop-blur-sm">
-        <div class="text-right">
-          <div class="text-[10px] text-slate-500 font-mono uppercase">System Integrity</div>
-          <div class="text-sm font-bold text-emerald-400 tracking-wider">{systemStatus}</div>
-        </div>
-        <div class="relative flex h-3 w-3">
-          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex h-3 w-3 rounded-full bg-emerald-500"></span>
-        </div>
-      </div>
-    </header>
+    <HeaderClient {project} {statusStyle} on:randomizeTheme={randomizeTheme} />
 
-    <section class="grid md:grid-cols-2 gap-6">
-      <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-6 relative overflow-hidden group hover:border-blue-500/30 transition-colors">
-        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-          <svg class="w-24 h-24 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-        </div>
+    <main class="px-8 py-8 space-y-12">
 
-        <h2 class="text-sm font-bold text-white uppercase tracking-wider mb-1">Credential Vault</h2>
-        <p class="text-xs text-slate-500 mb-6">Encrypted access to environment variables.</p>
-
-        <div class="flex items-center gap-4">
-          <div class="text-3xl font-mono text-blue-400 font-bold tracking-tighter">admin_core</div>
-          <button class="px-3 py-1 text-xs bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded hover:bg-blue-500 hover:text-white transition-all">
-            COPY KEY
-          </button>
-        </div>
-        <div class="mt-4 text-[10px] text-slate-600 font-mono">
-          LAST SYNC: {new Date().toLocaleDateString()} // SHA-256 ENCRYPTED
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <a href="/docs" class="bg-slate-900/40 border border-slate-800 rounded-xl p-6 flex flex-col justify-between hover:border-emerald-500/30 hover:bg-slate-800/40 transition-all group">
-          <svg class="w-8 h-8 text-slate-600 group-hover:text-emerald-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-          <span class="text-sm font-bold text-slate-300 mt-4 group-hover:text-white">System Manual</span>
-        </a>
-        <a href="mailto:admin@fabalos.com" class="bg-slate-900/40 border border-slate-800 rounded-xl p-6 flex flex-col justify-between hover:border-amber-500/30 hover:bg-slate-800/40 transition-all group">
-          <svg class="w-8 h-8 text-slate-600 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-          <span class="text-sm font-bold text-slate-300 mt-4 group-hover:text-white">Request Support</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="bg-slate-900/20 border border-slate-800 rounded-xl overflow-hidden backdrop-blur-sm">
-
-      <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-        <div>
-          <h2 class="text-sm font-bold text-white uppercase tracking-wider">Mission Timeline</h2>
-          <p class="text-xs text-slate-500 mt-1">Current Sector: <strong class="text-blue-400">{projectPhase}</strong></p>
-        </div>
-        <div class="text-2xl font-bold text-blue-500">{progress}%</div>
-      </div>
-
-      <div class="h-1 w-full bg-slate-900">
-        <div class="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-1000" style="width: {progress}%"></div>
-      </div>
-
-      <div class="divide-y divide-slate-800/50">
-        {#each milestones as step}
-          <div class="flex items-center gap-6 p-4 hover:bg-white/5 transition-colors group">
-
-            <span class="font-mono text-xs text-slate-600 group-hover:text-slate-400 transition-colors">{step.id}</span>
-
-            <div class="w-24 shrink-0">
-              <span class="px-2 py-1 rounded text-[10px] font-bold border tracking-wider {getStatusColor(step.status)}">
-                {step.status}
-              </span>
-            </div>
-
-            <div class="flex-grow">
-              <span class="text-sm font-medium {step.status === 'LOCKED' ? 'text-slate-500' : 'text-white'}">
-                {step.title}
-              </span>
-            </div>
-
-            <div class="text-xs font-mono text-slate-500">{step.date}</div>
+      {#if milestones.length > 0}
+        <div class="rounded-xl border border-white/5 bg-[#0a0a0a]/40 backdrop-blur-md p-6">
+          <div class="mb-6 flex items-center justify-between">
+             <h3 class="text-xs font-bold uppercase tracking-widest text-text-soft">Live Operations</h3>
+             <span class="rounded bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">STATUS: ACTIVE</span>
           </div>
-        {/each}
+          <SpaceTimeline {milestones} />
+        </div>
+      {/if}
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <div class="lg:col-span-2 space-y-4">
+           <div class="flex items-center justify-between">
+              <h2 class="text-sm font-bold text-white uppercase tracking-wider">Secure Vault</h2>
+           </div>
+           <div class="rounded-xl border border-white/10 bg-[#0a0a0a]/40 backdrop-blur-md overflow-hidden">
+              {#each files as file}
+                <div class="group flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5 text-text-soft group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <span class="text-sm font-medium text-text-main">{file.key.split('/').pop()}</span>
+                    </div>
+                    <a href="download?file={file.key}" class="px-3 py-1 rounded border border-white/10 text-[10px] font-bold uppercase hover:bg-primary hover:text-black hover:border-primary transition-all">
+                        Download
+                    </a>
+                </div>
+              {/each}
+              {#if files.length === 0}
+                <div class="p-8 text-center text-xs text-text-soft">No files secured.</div>
+              {/if}
+           </div>
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Quick Actions</h2>
+
+            <button on:click={() => showTicketModal = true} class="group w-full rounded-xl border border-white/10 bg-[#0a0a0a]/40 p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/5">
+                <div class="mb-2 flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary group-hover:bg-primary group-hover:text-black">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                </div>
+                <h3 class="text-xs font-bold text-white">Create Support Ticket</h3>
+                <p class="text-[10px] text-text-soft mt-1">Report bugs or request updates.</p>
+            </button>
+
+            <a href="mailto:frank.2.abalos@gmail.com" class="group block w-full rounded-xl border border-white/10 bg-[#0a0a0a]/40 p-4 text-left transition-all hover:border-accent/50 hover:bg-accent/5">
+                <div class="mb-2 flex h-8 w-8 items-center justify-center rounded bg-accent/10 text-accent group-hover:bg-accent group-hover:text-black">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </div>
+                <h3 class="text-xs font-bold text-white">Contact Engineer</h3>
+                <p class="text-[10px] text-text-soft mt-1">Direct email line.</p>
+            </a>
+        </div>
+
       </div>
 
-    </section>
-
+    </main>
   </div>
+
+  <TicketModal bind:show={showTicketModal} {form} />
 </div>

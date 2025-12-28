@@ -1,28 +1,47 @@
-import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import { error } from '@sveltejs/kit';
 
-export const load: PageServerLoad = async ({ parent, locals: { supabase } }) => {
-	// 1. Get the Tenant Identity from the parent layout
-	const { tenant } = await parent();
+export const load = async ({ params, locals: { supabase } }) => {
+	const { tenant_slug } = params;
 
-	// 2. Security Gate: Does this tenant actually have access to CRM?
-	// We check the 'active_modules' list we made earlier.
-	const { data: status } = await supabase
-		.from('project_status')
-		.select('active_modules')
-		.eq('tenant_slug', tenant.tenant_slug)
-		.single();
+	console.log('Loading CRM for:', tenant_slug);
 
-	if (!status?.active_modules?.includes('crm')) {
-		throw redirect(303, '/vault'); // Kick them out if they didn't pay for CRM
-	}
-
-	// 3. Fetch THEIR leads only
-	const { data: leads } = await supabase
-		.from('crm_leads')
+	// DIRECT ACCESS: Hindi na kailangan dumaan sa project_status para kumuha ng ID.
+	// Kukunin na natin direkta gamit ang 'tenant_slug' column na kakagawin lang natin.
+	const { data: contacts } = await supabase
+		.from('crm_contacts')
 		.select('*')
-		.eq('tenant_slug', tenant.tenant_slug)
+		.eq('tenant_slug', tenant_slug) // <--- ETO ANG BAGONG SUSI
 		.order('created_at', { ascending: false });
 
-	return { leads: leads || [] };
+	return {
+		contacts: contacts || []
+	};
+};
+
+export const actions = {
+	createEntity: async ({ request, locals: { supabase }, params }) => {
+		const formData = await request.formData();
+		const name = formData.get('name') as string;
+		const email = formData.get('email') as string;
+		const role = formData.get('role') as string;
+		const status = formData.get('status') as string;
+		const { tenant_slug } = params; // Kunin ang slug sa URL
+
+		// INSERT DIRECTLY: Isasave natin ang tenant_slug (e.g., 'admin_core')
+		const { error } = await supabase.from('crm_contacts').insert({
+			tenant_slug: tenant_slug, // <--- DIRECT LINK NA
+			name,
+			email,
+			role,
+			status: status || 'lead'
+			// Note: Hindi na natin kailangan ng project_id dito
+		});
+
+		if (error) {
+			console.error('Insert Failed:', error);
+			return { success: false, error: error.message };
+		}
+
+		return { success: true };
+	}
 };

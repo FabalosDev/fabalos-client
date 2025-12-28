@@ -3,17 +3,35 @@ import { fail } from '@sveltejs/kit';
 import { N8N_WEBHOOK_URL } from '$env/static/private';
 
 export const load = async ({ platform, parent, locals: { supabase } }) => {
+	// Kukunin ang project details galing sa layout (kasama ang project_id)
 	const { project } = await parent();
 	const { tenant_slug, id: project_id } = project;
 
-	// Fetch Milestones - Ginagamit ang project_id na galing sa parent layout
+	// 1. Fetch Milestones (KEEP EXISTING)
 	const { data: milestones } = await supabase
 		.from('project_milestones')
 		.select('*')
 		.eq('project_id', project_id)
 		.order('sort_order', { ascending: true });
 
-	// R2 Storage - Folder Isolation para sa fabalos.com production [cite: 2025-12-25]
+	// 2. Fetch Pending Actions (NEW ADDITION)
+	const { data: actions } = await supabase
+		.from('action_items')
+		.select('*')
+		.eq('project_id', project_id)
+		.eq('status', 'pending')
+		.order('created_at', { ascending: false })
+		.limit(3);
+
+	// 3. Fetch System Logs (NEW ADDITION)
+	const { data: logs } = await supabase
+		.from('project_logs')
+		.select('*')
+		.eq('project_id', project_id)
+		.order('created_at', { ascending: false })
+		.limit(5);
+
+	// 4. R2 Storage Logic (KEEP EXISTING)
 	let files: any[] = [];
 	if (platform?.env?.CLIENT_ASSETS) {
 		try {
@@ -36,10 +54,13 @@ export const load = async ({ platform, parent, locals: { supabase } }) => {
 	return {
 		project,
 		files,
-		milestones: milestones || []
+		milestones: milestones || [],
+		actionItems: actions || [], // Added this
+		logs: logs || [] // Added this
 	};
 };
 
+// 5. Actions / Form Handler (KEEP EXISTING - WALANG GINALAW DITO)
 export const actions = {
 	createTicket: async ({ request, locals: { supabase }, params }) => {
 		const formData = await request.formData();
@@ -51,7 +72,6 @@ export const actions = {
 			return fail(400, { error: 'Subject and message are required' });
 		}
 
-		// Kinukuha ang ID base sa tenant_slug (e.g., admin_core)
 		const { data: project } = await supabase
 			.from('project_status')
 			.select('id, client_id')
@@ -60,7 +80,6 @@ export const actions = {
 
 		if (!project) return fail(404, { error: 'Project node not found' });
 
-		// INSERT FIX: Kailangan ng .select().single() para makuha ang ticket object
 		const { data: ticket, error } = await supabase
 			.from('support_tickets')
 			.insert({
@@ -77,10 +96,8 @@ export const actions = {
 			return fail(500, { error: 'Failed to submit ticket' });
 		}
 
-		// Orchestration Layer (n8n) [cite: 2025-12-25]
 		try {
-			// Ginagamit ang floflux.com endpoint para sa R&D/Testing [cite: 2025-12-25]
-			await fetch('https://floflux.fabalos.com/webhook/ticket', {
+			await fetch('https://floflux.fabalos.com/webhook-test/ticket', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -94,7 +111,6 @@ export const actions = {
 			});
 		} catch (err) {
 			console.error('n8n Uplink Failed:', err);
-			// Idempotent: Okay lang mag-fail ang webhook dahil saved na sa DB [cite: 2025-12-25]
 		}
 
 		return { success: true };

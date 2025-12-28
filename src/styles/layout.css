@@ -164,3 +164,35 @@
     z-index: 10; /* Ensures the text (inside span) is always on top of the wipe effect */
   }
 }
+
+/* GLOBAL SCROLLBAR CONFIG */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 6px;  /* Sobrang nipis lang */
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Transparent ang background */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1); /* Halos invisible na gray */
+  border-radius: 20px;       /* Rounded edges */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(16, 185, 129, 0.4); /* Nagiging Emerald pag tinapatan ng mouse */
+}
+
+/* Para sa Custom Class na ginamit natin sa Sidebar/Dashboard */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px; /* Mas manipis pa sa sidebar */
+}
