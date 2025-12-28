@@ -46,7 +46,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	// Redirect authenticated users away from login
 	if (session && path === '/login') {
-		throw redirect(303, '/portal/test');
+		throw redirect(303, '/portal');
 	}
 
 	// 🛑 ADMIN SHIELD

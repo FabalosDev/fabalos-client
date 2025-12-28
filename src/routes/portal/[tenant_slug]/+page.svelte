@@ -87,36 +87,54 @@
     --surface: {theme.surface};
   "
 >
-  <nav class="sticky top-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-md transition-colors duration-300">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-      <div class="flex items-center gap-4">
-        <a href="/portal/test" class="group flex items-center gap-2 text-xs font-medium text-text-soft transition-colors hover:text-text-main">
-          <svg class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          BACK TO HUB
-        </a>
+<nav class="sticky top-0 z-50 border-b border-white/5 bg-[#050505]/80 backdrop-blur-md transition-all duration-300">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+
+    <div class="flex items-center gap-4">
+      <a href="/portal/" class="group flex items-center gap-2 text-xs font-bold tracking-widest text-slate-500 transition-colors hover:text-white">
+        <svg class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        BACK TO HUB
+      </a>
+    </div>
+
+    <div class="flex items-center gap-4 md:gap-6">
+
+      <div class="hidden md:flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-3 py-1.5">
+        <span class="relative flex h-2 w-2">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full {statusStyle.bg} opacity-75"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full {statusStyle.bg}"></span>
+        </span>
+        <span class="font-mono text-[10px] font-bold uppercase tracking-wider {statusStyle.text}">
+          Node: {project.storage_health}
+        </span>
       </div>
 
-      <div class="flex items-center gap-6">
-        <div class="flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-3 py-1">
-          <span class="relative flex h-2 w-2">
-            <span class="absolute inline-flex h-full w-full animate-ping rounded-full {statusStyle.bg} opacity-75"></span>
-            <span class="relative inline-flex h-2 w-2 rounded-full {statusStyle.bg}"></span>
-          </span>
-          <span class="font-mono text-[10px] font-bold uppercase tracking-wider {statusStyle.text}">
-            System {project.storage_health}
-          </span>
-        </div>
-        <div class="h-4 w-px bg-white/10"></div>
-        <form action="/auth/logout" method="POST">
-          <button type="submit" class="text-xs font-medium text-text-soft transition-colors hover:text-error">
-            Disconnect
-          </button>
-        </form>
-      </div>
+      <button
+        type="button"
+        on:click={randomizeTheme}
+        class="group flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/50 px-4 py-1.5 transition-all hover:border-emerald-500/50 hover:bg-slate-800"
+      >
+        <svg class="h-3 w-3 text-slate-400 group-hover:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+        </svg>
+        <span class="font-mono text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-white">
+          Theme
+        </span>
+      </button>
+
+      <div class="h-4 w-px bg-white/10"></div>
+
+      <form action="/auth/logout" method="POST">
+        <button type="submit" class="text-[10px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-red-500">
+          Disconnect
+        </button>
+      </form>
+
     </div>
-  </nav>
+  </div>
+</nav>
 
   <header class="relative overflow-hidden border-b border-white/5 bg-surface py-16 transition-colors duration-300">
     <div class="absolute inset-0 bg-primary/20" style="mask-image: url('/grid.svg'); -webkit-mask-image: url('/grid.svg'); mask-size: 40px 40px;"></div>
@@ -342,21 +360,6 @@
 
     </div>
   </main>
-
-  <button
-    type="button"
-    on:click={randomizeTheme}
-    class="fixed bottom-6 right-6 z-[9999] cursor-pointer flex items-center gap-3 rounded-full border border-white/10 bg-[#0a0a0a] px-5 py-2.5 shadow-2xl backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_20px_rgba(var(--primary),0.2)] hover:-translate-y-1 active:scale-95"
-  >
-    <div class="flex items-center justify-center h-5 w-5 rounded-full bg-white/5 text-text-soft">
-      <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-      </svg>
-    </div>
-    <span class="font-mono text-[10px] font-bold uppercase tracking-widest text-text-soft transition-colors group-hover:text-primary">
-      Theme
-    </span>
-  </button>
 </div>
 
 {#if showTicketModal}

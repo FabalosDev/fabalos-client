@@ -16,7 +16,7 @@
 		</p>
 
 		<a
-			href="/portal/test"
+			href="/portal"
 			class="mt-8 inline-flex items-center gap-2 rounded border border-slate-800 bg-slate-900 px-6 py-2 text-xs font-bold uppercase text-white hover:border-blue-500 hover:text-blue-400 transition-all"
 		>
 			<span>← Return to Grid</span>

@@ -1,12 +1,40 @@
-export const load = async ({ locals: { supabase } }) => {
-	// We just ask for "all" projects.
-	// RLS automatically filters this to ONLY show the logged-in user's data.
-	const { data: projects, error } = await supabase.from('project_status').select('*');
+import { redirect } from '@sveltejs/kit';
 
-	if (error) {
-		console.error('Error loading projects:', error);
-		return { projects: [] };
+export const load = async ({ locals: { supabase, safeGetSession } }) => {
+	const { session } = await safeGetSession();
+
+	if (!session) {
+		throw redirect(303, '/login');
 	}
 
-	return { projects };
+	const { data: project, error } = await supabase
+		.from('project_status')
+		.select(
+			`
+			tenant_slug,
+			authorized_clients!inner (
+				client_name,
+				email
+			)
+		`
+		)
+		.eq('authorized_clients.email', session.user.email)
+		.single();
+
+	if (project && !error) {
+		return {
+			user: {
+				name: session.user.email,
+				company: project.authorized_clients.client_name
+			},
+			routing: {
+				target: `/portal/${project.tenant_slug}`
+			}
+		};
+	}
+
+	return {
+		user: { name: session.user.email, company: 'Unauthorized' },
+		routing: { target: '/portal/onboarding' }
+	};
 };
