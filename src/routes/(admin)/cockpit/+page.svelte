@@ -1,13 +1,12 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { fade, fly } from 'svelte/transition';
-  import Footer2 from '$lib/components/Footer2.svelte';
 
   export let data;
   export let form;
 
   // ⚡ FIX: Destructure the server data so 'allProjects' exists
-  $: ({ allProjects, stats, storageStatus } = data);
+  $: ({ allProjects, allClients, tickets, milestones, availableModules, stats, storageStatus } = data);
 
   let showProvisionModal = false;
   let loading = false;
@@ -47,6 +46,44 @@
       year: 'numeric'
     });
   };
+
+  export const actions = {
+  // PROVISIONING NEW TENANT
+  provision: async ({ request, locals: { supabase } }) => {
+    const formData = await request.formData();
+    const { client_name, client_email, tenant_slug, brand_color } = Object.fromEntries(formData);
+
+    // 1. Client Identity
+    const { data: client, error: cErr } = await supabase.from('authorized_clients').insert([{ display_name: client_name, email: client_email }]).select().single();
+    if (cErr) return fail(400, { message: 'Client Creation Failed' });
+
+    // 2. Project Link
+    const { error: pErr } = await supabase.from('projects').insert([{
+      client_id: client.id,
+      tenant_slug,
+      brand_color: brand_color || '#3b82f6',
+      storage_health: 'healthy',
+      active_modules: ['vault', 'support']
+    }]);
+
+    return pErr ? fail(400, { message: 'Link Failed' }) : { success: true };
+  },
+
+  // ASSIGN MILESTONE
+  addMilestone: async ({ request, locals: { supabase } }) => {
+    const formData = await request.formData();
+    const { project_id, title, target_date } = Object.fromEntries(formData);
+    const { error } = await supabase.from('milestones').insert([{ project_id, title, target_date, status: 'PENDING' }]);
+    return error ? fail(400) : { success: true };
+  },
+
+  // RESOLVE ANOMALY
+  resolveTicket: async ({ request, locals: { supabase } }) => {
+    const id = (await request.formData()).get('id');
+    await supabase.from('support_tickets').update({ status: 'RESOLVED' }).eq('id', id);
+    return { success: true };
+  }
+};
 </script>
 
 <svelte:head>
@@ -128,27 +165,15 @@
         </div>
       </div>
 
-      <div
-        class="group relative overflow-hidden rounded border border-slate-800 bg-slate-900/40 p-6 transition-colors hover:border-slate-600"
-      >
-        <p class="mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-          System Health
-        </p>
-        <div class="flex items-center gap-3">
-          <p class="text-3xl font-bold text-green-500">{stats.healthySystems}</p>
-          <span class="text-[10px] text-slate-500">NODES</span>
-        </div>
-      </div>
+<div class="group relative overflow-hidden rounded border border-slate-800 bg-slate-900/40 p-6 transition-colors hover:border-red-600">
+    <p class="mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Open Anomalies</p>
+    <p class="text-3xl font-bold text-red-500 group-hover:animate-pulse">{stats.openTickets || 0}</p>
+</div>
 
-      <div
-        class="group relative overflow-hidden rounded border border-slate-800 bg-slate-900/40 p-6 transition-colors hover:border-slate-600"
-      >
-        <p class="mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-          R&D Status
-        </p>
-        <p class="text-3xl font-bold text-blue-500">ACTIVE</p>
-        <p class="text-[10px] text-slate-500">LANE 4</p>
-      </div>
+<div class="group relative overflow-hidden rounded border border-slate-800 bg-slate-900/40 p-6 transition-colors hover:border-blue-600">
+    <p class="mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Authorized Entities</p>
+    <p class="text-3xl font-bold text-blue-500">{stats.totalClients || 0}</p>
+</div>
 
       <div
         class="group relative overflow-hidden rounded border border-slate-800 bg-slate-900/40 p-6 transition-colors hover:border-slate-600"
@@ -160,6 +185,30 @@
     </div>
   </section>
 
+<section class="mb-16 border-t border-slate-900 pt-12">
+    <div class="mb-6 flex items-center justify-between border-l-2 border-red-600 px-2 pl-4">
+        <h2 class="text-xs font-bold text-slate-300 uppercase tracking-[0.2em]">Support_Anomaly_Monitor</h2>
+    </div>
+    <div class="overflow-x-auto rounded-lg border border-slate-900 bg-slate-950">
+        <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-black/50 text-slate-500 uppercase tracking-wider">
+                <tr><th class="px-6 py-4">Tenant</th><th class="px-6 py-4">Subject</th><th class="px-6 py-4">Severity</th><th class="px-6 py-4 text-right">Uplink</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-900 text-slate-400">
+                {#each tickets as ticket}
+                    <tr class="hover:bg-slate-900/50 transition-colors">
+                        <td class="px-6 py-4 font-bold text-white uppercase">{ticket.tenant_slug}</td>
+                        <td class="px-6 py-4 opacity-70">{ticket.subject}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-[9px] {ticket.severity === 'HIGH' ? 'bg-red-500/20 text-red-500' : 'bg-blue-500/20 text-blue-500'}">[{ticket.severity}]</span></td>
+                        <td class="px-6 py-4 text-right">
+                            <form method="POST" action="?/resolveTicket" use:enhance><input type="hidden" name="id" value={ticket.id} /><button type="submit" class="text-emerald-500 hover:text-white uppercase font-bold text-[10px]">Resolve</button></form>
+                        </td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
+    </div>
+</section>
   <section class="mb-16">
     <div class="mb-6 flex items-center justify-between border-l-2 border-green-500 px-2 pl-4">
       <h2 class="text-xs font-bold text-slate-300 uppercase tracking-[0.2em]">
@@ -463,5 +512,6 @@
     </div>
   {/if}
 </div>
+<div class="min-h-screen bg-[#050505] p-6 font-mono text-slate-200 selection:bg-red-500/30 md:p-12">
 
-<Footer2 />
+</div>

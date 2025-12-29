@@ -1,118 +1,56 @@
-import { fail } from '@sveltejs/kit';
-// Siguraduhin na ang webhook URL ay galing sa env para sa floflux.com dev testing [cite: 2025-12-25]
-import { N8N_WEBHOOK_URL } from '$env/static/private';
+import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ platform, parent, locals: { supabase } }) => {
-	// Kukunin ang project details galing sa layout (kasama ang project_id)
-	const { project } = await parent();
-	const { tenant_slug, id: project_id } = project;
+export const load = async ({ params, locals: { supabase, safeGetSession } }) => {
+	const { session, user } = await safeGetSession();
+	if (!session || !user) throw redirect(303, '/login');
 
-	// 1. Fetch Milestones (KEEP EXISTING)
-	const { data: milestones } = await supabase
-		.from('project_milestones')
+	const { data: client } = await supabase
+		.from('authorized_clients')
 		.select('*')
-		.eq('project_id', project_id)
-		.order('sort_order', { ascending: true });
+		.eq('auth_id', user.id)
+		.single();
 
-	// 2. Fetch Pending Actions (NEW ADDITION)
-	const { data: actions } = await supabase
-		.from('action_items')
+	if (!client) return { status: 'unauthorized', user };
+
+	// 1. Kunin ang current project gamit ang slug sa URL
+	const { data: project } = await supabase
+		.from('projects')
 		.select('*')
-		.eq('project_id', project_id)
-		.eq('status', 'pending')
-		.order('created_at', { ascending: false })
-		.limit(3);
+		.eq('tenant_slug', params.tenant_slug)
+		.single();
 
-	// 3. Fetch System Logs (NEW ADDITION)
-	const { data: logs } = await supabase
-		.from('project_logs')
-		.select('*')
-		.eq('project_id', project_id)
-		.order('created_at', { ascending: false })
-		.limit(5);
+	if (!project) return { status: 'not_found' };
 
-	// 4. R2 Storage Logic (KEEP EXISTING)
-	let files: any[] = [];
-	if (platform?.env?.CLIENT_ASSETS) {
-		try {
-			const list = await platform.env.CLIENT_ASSETS.list({
-				prefix: `${tenant_slug}/`,
-				delimiter: '/',
-				limit: 20
-			});
+	// 2. FETCH REAL DATA PARA SA STATS
+	const [milestonesRes, modulesRes, filesRes] = await Promise.all([
+		supabase
+			.from('project_milestones')
+			.select('*')
+			.eq('project_id', project.id)
+			.order('due_date', { ascending: true }),
+		supabase.from('project_modules').select('*, modules(*)').eq('project_id', project.id),
+		// Placeholder muna ang files hangga't wala tayong storage table
+		{ data: [] }
+	]);
 
-			files = list.objects.map((obj: any) => ({
-				key: obj.key,
-				size: (obj.size / 1024 / 1024).toFixed(2) + ' MB',
-				uploaded: obj.uploaded
-			}));
-		} catch (e) {
-			console.error('R2 Link Failed:', e);
-		}
-	}
+	// I-format ang modules para sa sidebar
+	// Sa loob ng +page.server.ts load function:
+	const active_modules =
+		modulesRes.data
+			?.map((m) => ({
+				name: m.modules?.name,
+				slug: m.modules?.slug
+			}))
+			.filter((m) => m.slug) || [];
 
 	return {
-		project,
-		files,
-		milestones: milestones || [],
-		actionItems: actions || [], // Added this
-		logs: logs || [] // Added this
+		status: 'authorized',
+		user,
+		client,
+		project: { ...project, active_modules },
+		milestones: milestonesRes.data || [],
+		files: filesRes.data || [],
+		actionItems: [],
+		logs: []
 	};
-};
-
-// 5. Actions / Form Handler (KEEP EXISTING - WALANG GINALAW DITO)
-export const actions = {
-	createTicket: async ({ request, locals: { supabase }, params }) => {
-		const formData = await request.formData();
-		const subject = formData.get('subject') as string;
-		const message = formData.get('message') as string;
-		const priority = formData.get('priority') as string;
-
-		if (!subject || !message) {
-			return fail(400, { error: 'Subject and message are required' });
-		}
-
-		const { data: project } = await supabase
-			.from('project_status')
-			.select('id, client_id')
-			.eq('tenant_slug', params.tenant_slug)
-			.single();
-
-		if (!project) return fail(404, { error: 'Project node not found' });
-
-		const { data: ticket, error } = await supabase
-			.from('support_tickets')
-			.insert({
-				project_id: project.id,
-				subject,
-				message,
-				priority: priority || 'normal'
-			})
-			.select()
-			.single();
-
-		if (error) {
-			console.error('Vault Write Error:', error);
-			return fail(500, { error: 'Failed to submit ticket' });
-		}
-
-		try {
-			await fetch('https://floflux.fabalos.com/webhook-test/ticket', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					event: 'NEW_SUPPORT_TICKET',
-					ticket_id: ticket.id,
-					client_id: project.client_id,
-					subject,
-					message,
-					timestamp: new Date().toISOString()
-				})
-			});
-		} catch (err) {
-			console.error('n8n Uplink Failed:', err);
-		}
-
-		return { success: true };
-	}
 };

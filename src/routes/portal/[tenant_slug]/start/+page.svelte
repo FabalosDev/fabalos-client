@@ -30,7 +30,7 @@
 </script>
 
 <div class="space-y-16 py-12">
-	<header class="max-w-4xl border-l-4 border-primary pl-8">
+	<header class="max-w-4xl zborder-primary pl-8">
 		<h2 class="font-mono text-[10px] font-bold uppercase tracking-[0.4em] text-primary">
 			System_Standard_Operating_Procedure
 		</h2>
@@ -111,12 +111,6 @@
 							>. Submit a priority ticket through the engineering channel immediately.
 						</p>
 					</div>
-					<button
-						on:click={() => (showTicketModal = true)}
-						class="whitespace-nowrap bg-red-600 px-12 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-all hover:bg-red-500 shadow-lg"
-					>
-						Open_Support_Ticket
-					</button>
 				</div>
 			</div>
 		</div>

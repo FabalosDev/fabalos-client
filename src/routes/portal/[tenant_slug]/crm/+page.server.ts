@@ -1,16 +1,16 @@
 import { error } from '@sveltejs/kit';
 
-export const load = async ({ params, locals: { supabase } }) => {
-	const { tenant_slug } = params;
+export const load = async ({ parent, locals: { supabase } }) => {
+	// 1. INHERIT Project ID from Layout
+	const { project } = await parent();
 
-	console.log('Loading CRM for:', tenant_slug);
+	console.log('Loading CRM for Project ID:', project.id);
 
-	// DIRECT ACCESS: Hindi na kailangan dumaan sa project_status para kumuha ng ID.
-	// Kukunin na natin direkta gamit ang 'tenant_slug' column na kakagawin lang natin.
+	// 2. STRICT FETCH: Use project_id
 	const { data: contacts } = await supabase
 		.from('crm_contacts')
 		.select('*')
-		.eq('tenant_slug', tenant_slug) // <--- ETO ANG BAGONG SUSI
+		.eq('project_id', project.id) // <--- FIX
 		.order('created_at', { ascending: false });
 
 	return {
@@ -25,16 +25,24 @@ export const actions = {
 		const email = formData.get('email') as string;
 		const role = formData.get('role') as string;
 		const status = formData.get('status') as string;
-		const { tenant_slug } = params; // Kunin ang slug sa URL
 
-		// INSERT DIRECTLY: Isasave natin ang tenant_slug (e.g., 'admin_core')
+		// Lookup Project ID first
+		const { data: project } = await supabase
+			.from('projects') // <--- FIX
+			.select('id')
+			.eq('tenant_slug', params.tenant_slug)
+			.single();
+
+		if (!project) return { success: false, error: 'Project not found' };
+
+		// Insert with Link
 		const { error } = await supabase.from('crm_contacts').insert({
-			tenant_slug: tenant_slug, // <--- DIRECT LINK NA
+			project_id: project.id, // <--- FIX
 			name,
 			email,
 			role,
-			status: status || 'lead'
-			// Note: Hindi na natin kailangan ng project_id dito
+			status: status || 'lead',
+			tenant_slug: params.tenant_slug
 		});
 
 		if (error) {

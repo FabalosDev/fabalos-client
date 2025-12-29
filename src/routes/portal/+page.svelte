@@ -5,6 +5,15 @@
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
   });
+
+  // ⚡ AUTOMATIC ROUTING: Kunin ang slug ng unang project para sa link button
+  $: targetLink = data.projects && data.projects.length > 0
+    ? `/portal/${data.projects[0].tenant_slug}`
+    : '#';
+
+  // ⚡ DISPLAY NAME: Gamitin ang display name ng client, or email fallback
+  $: displayName = data.client?.display_name || data.user?.email || 'Unknown Pilot';
+  $: companyName = data.client?.client_name || 'Unassigned';
 </script>
 
 <svelte:head>
@@ -40,7 +49,7 @@
           <div>
             <h1 class="text-2xl font-bold tracking-tight text-white drop-shadow-md">Identity Confirmed</h1>
             <p class="mt-1 font-mono text-xs uppercase tracking-[0.2em] text-emerald-500/80">
-              User: {data.user?.name || 'Unknown Pilot'}
+              User: {displayName}
             </p>
           </div>
         </div>
@@ -59,7 +68,7 @@
             </div>
             <div class="flex items-center justify-between border-b border-emerald-500/10 pb-2">
               <span class="text-slate-500 uppercase tracking-wide">Organization</span>
-              <span class="font-medium text-white">{data.user?.company || '---'}</span>
+              <span class="font-medium text-white">{companyName}</span>
             </div>
             <div class="flex items-center justify-between pt-1">
               <span class="text-slate-500 uppercase tracking-wide">Stardate</span>
@@ -69,7 +78,7 @@
         </div>
 
         <a
-          href={data.routing?.target || '#'}
+          href={targetLink}
           class="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-lg bg-emerald-600/10 px-6 py-4 font-bold text-emerald-400 transition-all duration-300 hover:bg-emerald-600 hover:text-white hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] border border-emerald-500/20 hover:border-emerald-500"
         >
           <span class="relative z-10 tracking-widest uppercase text-xs">Initialize Dashboard</span>

@@ -5,6 +5,11 @@
   export let statusStyle: { bg: string, text: string };
 
   const dispatch = createEventDispatcher();
+
+  // Safe date formatter
+  $: lastSync = project.updated_at
+    ? new Date(project.updated_at).toLocaleDateString()
+    : (project.created_at ? new Date(project.created_at).toLocaleDateString() : 'N/A');
 </script>
 
 <nav class="sticky top-0 z-40 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md transition-all duration-300">
@@ -26,7 +31,7 @@
           <span class="relative inline-flex h-2 w-2 rounded-full {statusStyle.bg} shadow-[0_0_8px_currentColor]"></span>
         </span>
         <span class="font-mono text-[10px] font-bold uppercase tracking-wider {statusStyle.text}">
-          Node: {project.storage_health || 'Unknown'}
+          Node: {project.storage_health || 'Unkown'}
         </span>
       </div>
 
@@ -72,7 +77,7 @@
         <div class="rounded-lg border border-white/10 bg-white/[0.02] p-4 backdrop-blur-sm">
           <span class="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Last Sync</span>
           <span class="font-mono text-sm font-bold text-white">
-            {new Date(project.last_updated).toLocaleDateString()}
+            {lastSync}
           </span>
         </div>
       </div>

@@ -3,9 +3,9 @@ import { error } from '@sveltejs/kit';
 export const load = async ({ params, locals: { supabase } }) => {
 	const { tenant_slug } = params;
 
-	// FINAL: Sa 'project_status' tayo kukuha. Dito tayo naka-lock.
+	// FIX: Changed 'project_status' to 'projects'
 	const { data: project } = await supabase
-		.from('project_status')
+		.from('projects')
 		.select('id, tenant_slug')
 		.eq('tenant_slug', tenant_slug)
 		.single();

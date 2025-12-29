@@ -195,26 +195,42 @@ $: contacts = data.contacts;
                     Simulate an incoming webhook payload from an external source (e.g. Facebook Lead Form).
                 </p>
 
-                <div>
-                    <label class="block text-[10px] uppercase text-cyan-700 font-mono mb-1">Entity Name</label>
-                    <input name="name" type="text" required placeholder="TEST_DATA_01" class="w-full bg-black border border-cyan-900 text-cyan-100 text-xs p-2 focus:border-cyan-500 outline-none font-mono" />
-                </div>
+<div>
+    <label for="entity_name" class="block text-[10px] uppercase text-cyan-700 font-mono mb-1">Entity Name</label>
+    <input
+        id="entity_name"
+        name="name"
+        type="text"
+        required
+        placeholder="TEST_DATA_01"
+        class="w-full bg-black border border-cyan-900 text-cyan-100 text-xs p-2 focus:border-cyan-500 outline-none font-mono"
+    />
+</div>
 
-                <div>
-                    <label class="block text-[10px] uppercase text-cyan-700 font-mono mb-1">Entity ID (Email)</label>
-                    <input name="email" type="email" required placeholder="test@packet.local" class="w-full bg-black border border-cyan-900 text-cyan-100 text-xs p-2 focus:border-cyan-500 outline-none font-mono" />
-                </div>
+<div>
+    <label for="entity_id" class="block text-[10px] uppercase text-cyan-700 font-mono mb-1">Entity ID (Email)</label>
+    <input
+        id="entity_id"
+        name="email"
+        type="email"
+        required
+        placeholder="test@packet.local"
+        class="w-full bg-black border border-cyan-900 text-cyan-100 text-xs p-2 focus:border-cyan-500 outline-none font-mono"
+    />
+</div>
 
-                <input type="hidden" name="role" value="AUTOMATION_BOT" />
-
-                <div>
-                    <label class="block text-[10px] uppercase text-cyan-700 font-mono mb-1">Simulate Status</label>
-                    <select name="status" class="w-full bg-black border border-cyan-900 text-cyan-100 text-xs p-2 focus:border-cyan-500 outline-none font-mono">
-                        <option value="processing">Processing (Checking)</option>
-                        <option value="synced">Synced (Success)</option>
-                        <option value="error">Error (Failed)</option>
-                    </select>
-                </div>
+<div>
+    <label for="sim_status" class="block text-[10px] uppercase text-cyan-700 font-mono mb-1">Simulate Status</label>
+    <select
+        id="sim_status"
+        name="status"
+        class="w-full bg-black border border-cyan-900 text-cyan-100 text-xs p-2 focus:border-cyan-500 outline-none font-mono"
+    >
+        <option value="processing">Processing (Checking)</option>
+        <option value="synced">Synced (Success)</option>
+        <option value="error">Error (Failed)</option>
+    </select>
+</div>
 
                 <div class="pt-4 flex justify-end gap-3">
                     <button type="button" on:click={() => showModal = false} class="px-4 py-2 text-[10px] font-mono uppercase text-cyan-600 hover:text-white">Cancel</button>

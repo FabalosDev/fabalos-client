@@ -1,85 +1,67 @@
 import { error, fail } from '@sveltejs/kit';
 
 export const load = async ({ locals: { supabase }, platform }) => {
-	const { data: allProjects, error: dbError } = await supabase
-		.from('project_status')
-		.select(
-			`
-      *,
-      authorized_clients (
-        display_name,
-        email
-      )
-    `
-		)
-		.order('last_updated', { ascending: false });
+	try {
+		// ⚡ FULL INFRASTRUCTURE UPLINK
+		const [projects, clients, tickets, milestones, modules, vault_stats] = await Promise.all([
+			// PROJECTS & LINKED CLIENTS
+			supabase
+				.from('projects')
+				.select('*, authorized_clients(*)')
+				.order('created_at', { ascending: false }),
+			// ALL REGISTERED CLIENT ENTITIES
+			supabase.from('authorized_clients').select('*').order('display_name', { ascending: true }),
+			// SYSTEM ANOMALIES
+			supabase.from('support_tickets').select('*').order('created_at', { ascending: false }),
+			// PROJECT ROADMAPS
+			supabase
+				.from('milestones')
+				.select('*, projects(tenant_slug)')
+				.order('target_date', { ascending: true }),
+			// AVAILABLE SYSTEM MODULES (CRM, VAULT, etc.)
+			supabase.from('project_modules').select('*'),
+			// GLOBAL VAULT OVERVIEW
+			supabase.from('project_vault').select('count', { count: 'exact', head: true })
+		]);
 
-	if (dbError) {
-		console.error('Admin Data Fetch Error:', dbError);
-		throw error(500, 'Internal Server Error: Vault Access Failed');
+		if (projects.error) throw new Error(`DB_SYNC_FAIL: ${projects.error.message}`);
+
+		// 🚀 TELEMETRY MAPPING
+		const stats = {
+			totalProjects: projects.data?.length || 0,
+			healthySystems: projects.data?.filter((p) => p.storage_health === 'healthy').length || 0,
+			activeModules: [...new Set(projects.data?.flatMap((p) => p.active_modules || []))].length,
+			openTickets: tickets.data?.filter((t) => t.status === 'OPEN').length || 0,
+			totalClients: clients.data?.length || 0,
+			totalVaultFiles: vault_stats.count || 0
+		};
+
+		return {
+			allProjects: projects.data || [],
+			allClients: clients.data || [],
+			tickets: tickets.data || [],
+			milestones: milestones.data || [],
+			availableModules: modules.data || [],
+			stats,
+			storageStatus: {
+				connected: !!platform?.env?.CLIENT_ASSETS,
+				bucketName: platform?.env?.CLIENT_ASSETS ? 'fabalos-client-assets' : 'DISCONNECTED'
+			}
+		};
+	} catch (err) {
+		console.error('COCKPIT_MASTER_CRASH:', err);
+		throw error(500, { message: 'Vault Access Failed: Full Schema Sync Interrupted' });
 	}
-
-	const storageStatus = {
-		connected: !!platform?.env?.CLIENT_ASSETS,
-		bucketName: platform?.env?.CLIENT_ASSETS ? 'fabalos-client-assets' : 'DISCONNECTED'
-	};
-
-	const stats = {
-		totalProjects: allProjects?.length || 0,
-		healthySystems: allProjects?.filter((p) => p.storage_health === 'healthy').length || 0,
-		activeModules: [...new Set(allProjects?.flatMap((p) => p.active_modules || []))].length
-	};
-
-	return { allProjects, storageStatus, stats };
 };
 
 export const actions = {
-	provision: async ({ request, locals: { supabase } }) => {
-		const formData = await request.formData();
-		const clientName = formData.get('client_name') as string;
-		const clientEmail = formData.get('client_email') as string;
-		const tenantSlug = formData.get('tenant_slug') as string;
-
-		// 🎨 NEW: Capture the brand color (Default to Foxther Blue if missing)
-		const brandColor = (formData.get('brand_color') as string) || '#3b82f6';
-
-		// 1. CREATE CLIENT IDENTITY
-		const { data: client, error: clientError } = await supabase
-			.from('authorized_clients')
-			.insert([
-				{
-					display_name: clientName,
-					email: clientEmail
-				}
-			])
-			.select()
-			.single();
-
-		if (clientError) {
-			return fail(400, {
-				message: 'Failed to create client identity.',
-				error: clientError.message
-			});
-		}
-
-		// 2. LINK INFRASTRUCTURE (The Floor)
-		const { error: projectError } = await supabase.from('project_status').insert([
-			{
-				client_id: client.id,
-				tenant_slug: tenantSlug,
-				brand_color: brandColor, // <--- INJECTED HERE
-				storage_health: 'healthy',
-				database_version: 'Supabase_v1.0',
-				active_modules: ['files', 'reports', 'crm'] // Standard Lane 2 Starter Pack
-			}
-		]);
-
-		if (projectError) {
-			// Cleanup: We could delete the client here if this fails,
-			// but keeping it allows for manual retry in the dashboard.
-			return fail(400, { message: 'Project link failed.', error: projectError.message });
-		}
-
-		return { success: true };
+	addClient: async ({ request, locals: { supabase } }) => {
+		// Logic for authorized_clients
+	},
+	addMilestone: async ({ request, locals: { supabase } }) => {
+		// Logic for milestones table
+	},
+	updateModules: async ({ request, locals: { supabase } }) => {
+		// Logic for project_modules
 	}
 };
