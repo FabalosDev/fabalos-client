@@ -25,6 +25,6 @@
   <div class="mx-auto max-w-[1400px] px-6 py-12">
     <slot />
   </div>
-
-  <Footer2 />
+ <Footer2 />
 </div>
+
