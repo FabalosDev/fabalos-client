@@ -6,7 +6,7 @@
   let showModal = false;
   let loading = false;
 
-  $: contacts = data.contacts;
+  $: contacts = data?.contacts ?? [];
 
   // Automation Status Colors
   function getStatusColor(status: string) {
@@ -17,9 +17,6 @@
       default: return 'text-slate-400 bg-slate-500/10 border-slate-500/30';
     }
   }
-
-
-$: contacts = data.contacts;
 
   // REAL-TIME CALCULATIONS
   $: totalVolume = contacts ? contacts.length : 0;
