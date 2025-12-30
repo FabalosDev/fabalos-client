@@ -49,7 +49,7 @@
       </a>
 
       <span class="text-[9px] text-slate-600 font-mono uppercase">
-        v2.0.4 // Encrypted Connection
+        Encrypted Connection
       </span>
     </div>
 

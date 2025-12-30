@@ -1,32 +1,26 @@
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit'; // Idinagdag ang redirect dito
 
-// 1. DATA LOADER (Ito ang nawala kaya naging 0 Users / No Systems)
+// 1. DATA LOADER
 export const load = async ({ locals: { supabase }, platform }) => {
 	try {
-		const [projects, clients, tickets, milestones, users] = await Promise.all([
-			// Projects
+		const [projects, clients, tickets, users] = await Promise.all([
+			// A. PROJECTS
 			supabase
 				.from('projects')
-				.select('*, authorized_clients(*)')
+				.select(`*, authorized_clients(*), project_milestones(*)`)
 				.order('created_at', { ascending: false }),
 
-			// Clients
+			// B. CLIENTS
 			supabase.from('authorized_clients').select('*').order('display_name', { ascending: true }),
 
-			// Tickets (Hide Resolved)
+			// C. TICKETS
 			supabase
 				.from('support_tickets')
 				.select('*')
 				.neq('status', 'RESOLVED')
 				.order('created_at', { ascending: false }),
 
-			// Milestones
-			supabase
-				.from('milestones')
-				.select('*, projects(tenant_slug)')
-				.order('target_date', { ascending: true }),
-
-			// 🔥 Users Directory (Ito yung para sa Select User tab)
+			// D. USERS DIRECTORY
 			supabase.from('admin_user_directory').select('*').order('created_at', { ascending: false })
 		]);
 
@@ -34,8 +28,7 @@ export const load = async ({ locals: { supabase }, platform }) => {
 			allProjects: projects.data || [],
 			allClients: clients.data || [],
 			tickets: tickets.data || [],
-			milestones: milestones.data || [],
-			systemUsers: users.data || [], // Pass users to frontend
+			systemUsers: users.data || [],
 			storageStatus: {
 				connected: !!platform?.env?.CLIENT_ASSETS,
 				bucketName: platform?.env?.CLIENT_ASSETS ? 'fabalos-client-assets' : 'DISCONNECTED'
@@ -47,36 +40,41 @@ export const load = async ({ locals: { supabase }, platform }) => {
 	}
 };
 
-// 2. FORM ACTIONS (Buttons Logic)
+// 2. FORM ACTIONS
 export const actions = {
-	// Add Client (Auto-fill fix)
+	// --- CLIENT ACTIONS ---
 	addClient: async ({ request, locals: { supabase } }) => {
 		const formData = await request.formData();
-		const display_name = formData.get('display_name');
-		const auth_id = formData.get('auth_id');
-		const email = formData.get('email');
+		const { email, auth_id, display_name, client_name } = Object.fromEntries(formData);
 
-		const { error } = await supabase.from('authorized_clients').insert([
-			{
-				display_name: display_name,
-				client_name: display_name,
-				auth_id: auth_id,
-				email: email,
-				status: 'ACTIVE'
-			}
-		]);
+		if (!email || !auth_id) return fail(400, { message: 'User selection required' });
 
-		if (error) return fail(400, { message: error.message });
-		return { success: true };
+		const { error } = await supabase
+			.from('authorized_clients')
+			.insert([{ email, auth_id, display_name, client_name, status: 'ACTIVE' }]);
+
+		if (error) return fail(500, { message: error.message });
+		throw redirect(303, '/cockpit');
 	},
 
-	// Toggle Status (Enable/Disable)
+	updateClient: async ({ request, locals: { supabase } }) => {
+		const formData = await request.formData();
+		const { id, display_name, client_name } = Object.fromEntries(formData);
+
+		const { error } = await supabase
+			.from('authorized_clients')
+			.update({ display_name, client_name })
+			.eq('id', id);
+
+		if (error) return fail(500, { message: error.message });
+		throw redirect(303, '/cockpit');
+	},
+
 	toggleClientStatus: async ({ request, locals: { supabase } }) => {
 		const formData = await request.formData();
 		const id = formData.get('id');
 		const currentStatus = formData.get('current_status');
-
-		const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+		const newStatus = currentStatus === 'ACTIVE' ? 'COMPLETED' : 'ACTIVE';
 
 		const { error } = await supabase
 			.from('authorized_clients')
@@ -84,35 +82,56 @@ export const actions = {
 			.eq('id', id);
 
 		if (error) return fail(400, { message: error.message });
-		return { success: true };
+		throw redirect(303, '/cockpit');
 	},
 
-	// Add Milestone
+	// --- MILESTONE ACTIONS ---
 	addMilestone: async ({ request, locals: { supabase } }) => {
 		const formData = await request.formData();
-		const { project_id, title, target_date } = Object.fromEntries(formData);
+		const { project_id, title, due_date, phase_label } = Object.fromEntries(formData);
 
-		const { error } = await supabase
-			.from('milestones')
-			.insert([{ project_id, title, target_date, status: 'PENDING' }]);
+		if (!project_id || !title || !due_date) return fail(400, { message: 'Missing fields' });
 
-		if (error) return fail(400, { message: error.message });
-		return { success: true };
+		const { error } = await supabase.from('project_milestones').insert([
+			{
+				project_id,
+				title,
+				due_date,
+				status: 'PENDING',
+				phase_label: phase_label || 'Phase I: Ignition'
+			}
+		]);
+
+		if (error) return fail(500, { message: error.message });
+		throw redirect(303, '/cockpit');
 	},
 
-	// Resolve Ticket
-	resolveTicket: async ({ request, locals: { supabase } }) => {
+	// Hanapin ito sa iyong +page.server.ts at i-rename
+	toggleMilestone: async ({ request, locals: { supabase } }) => {
 		const formData = await request.formData();
 		const id = formData.get('id');
-		const rawNotes = formData.get('admin_notes');
-		const admin_notes = rawNotes ? rawNotes.toString() : 'NO_NOTES_LOGGED';
+		const currentStatus = formData.get('current_status');
+
+		// Toggle logic: PENDING <-> COMPLETED
+		const newStatus = currentStatus === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
 
 		const { error } = await supabase
-			.from('support_tickets')
-			.update({ status: 'RESOLVED', admin_notes, resolved_at: new Date() })
+			.from('project_milestones')
+			.update({ status: newStatus })
 			.eq('id', id);
 
 		if (error) return fail(500, { message: error.message });
-		return { success: true };
+
+		// Crucial: Kailangan ang redirect para mag-trigger ang load function
+		// at mag-sync ang reactive declaration ($:) sa UI mo.
+		throw redirect(303, '/cockpit');
+	},
+
+	deleteMilestone: async ({ request, locals: { supabase } }) => {
+		const formData = await request.formData();
+		const id = formData.get('id');
+		const { error } = await supabase.from('project_milestones').delete().eq('id', id);
+		if (error) return fail(500, { message: error.message });
+		throw redirect(303, '/cockpit');
 	}
 };

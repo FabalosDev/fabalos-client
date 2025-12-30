@@ -7,7 +7,7 @@ export const load = async ({ params, locals: { supabase, safeGetSession } }) => 
 	const { data: client } = await supabase
 		.from('authorized_clients')
 		.select('*')
-		.eq('auth_id', user.id)
+		.eq('auth_id', user.id) // FIX: Removed the invalid 3rd argument
 		.single();
 
 	if (!client) return { status: 'unauthorized', user };
@@ -15,7 +15,7 @@ export const load = async ({ params, locals: { supabase, safeGetSession } }) => 
 	// 1. Kunin ang current project gamit ang slug sa URL
 	const { data: project } = await supabase
 		.from('projects')
-		.select('*')
+		.select('*, authorized_clients(client_name)') // FIX: Added join para makuha ang client_name
 		.eq('tenant_slug', params.tenant_slug)
 		.single();
 

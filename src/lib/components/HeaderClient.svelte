@@ -69,7 +69,7 @@
         </h1>
 
         <p class="mt-4 max-w-xl text-sm leading-relaxed text-slate-400 font-mono">
-          Authorized environment for <span class="text-white font-semibold">{project.authorized_clients?.display_name || 'Client'}</span>.
+          Authorized environment for <span class="text-white font-semibold">{project.authorized_clients?.client_name || 'Client'}</span>.
         </p>
       </div>
 

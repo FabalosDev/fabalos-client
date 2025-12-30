@@ -12,9 +12,18 @@
   $: actionItems = data.actionItems || [];
   $: logs = data.logs || [];
 
-  // STATS CALCULATION
-  $: completedMilestones = milestones.filter(m => m.status === 'completed').length;
-  $: progressPercent = milestones.length > 0 ? Math.round((completedMilestones / milestones.length) * 100) : 0;
+  // --- STATS CALCULATION (SINGLE DECLARATION) ---
+  // Listahan ng lahat ng keywords na ibig sabihin ay "TAPOS NA"
+  const finishedKeys = ['COMPLETED', 'COMPLETE', 'TAPOS NA', 'DONE', 'OK'];
+
+  $: completedCount = milestones.filter(m =>
+      finishedKeys.includes(m.status?.toUpperCase())
+  ).length;
+
+  $: progressPercent = milestones.length > 0
+      ? Math.round((completedCount / milestones.length) * 100)
+      : 0;
+
   $: activeModulesCount = project.active_modules ? project.active_modules.length : 0;
 
   let statusStyle = { bg: 'bg-emerald-500', text: 'text-emerald-400' };
@@ -69,9 +78,11 @@
                 <h3 class="mb-4 text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Mission Trajectory
                 </h3>
-                <div class="rounded-xl border border-white/5 bg-[#0a0a0a]/80 p-6 shadow-2xl">
-                    <SpaceTimeline {milestones} />
-                </div>
+<div class="">
+    <div class="absolute left-0 top-0 h-full w-[1px] bg-gradient-to-b from-white/20 via-transparent to-white/20"></div>
+
+    <SpaceTimeline {milestones} />
+</div>
             </div>
 
             <div>
