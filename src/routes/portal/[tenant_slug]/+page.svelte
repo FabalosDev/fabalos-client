@@ -28,19 +28,35 @@
   let statusStyle = { bg: 'bg-emerald-500', text: 'text-emerald-400' };
 
   // --- DOWNLOAD FUNCTION (FIXED) ---
+// --- DOWNLOAD FUNCTION (SECURE BLOB METHOD) ---
   async function downloadFile(filePath, fileName) {
       if (!filePath) return;
-      // Safe check: Ensure fileName exists, or default to 'download'
       const safeName = fileName || 'download';
 
-      const { data } = supabase.storage.from('vault').getPublicUrl(filePath);
+      // 1. I-download ang raw data mula sa Supabase (Respetado ang RLS)
+      const { data, error } = await supabase.storage
+          .from('vault')
+          .download(filePath);
 
+      if (error) {
+          console.error('Download Error:', error);
+          alert('Access Denied: Cannot download file.');
+          return;
+      }
+
+      // 2. Gumawa ng temporary URL mula sa Blob data
+      const url = window.URL.createObjectURL(data);
+
+      // 3. Force Download sa Browser
       const link = document.createElement('a');
-      link.href = data.publicUrl;
+      link.href = url;
       link.download = safeName;
       document.body.appendChild(link);
       link.click();
+
+      // 4. Cleanup (Para hindi kumain ng memory)
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
   }
 </script>
 
@@ -68,10 +84,25 @@
             </div>
         </div>
 
-        <div class="rounded-xl border border-white/5 bg-[#0a0a0a]/80 p-5 backdrop-blur-sm">
-             <div class="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-2">Active Modules</div>
-             <div class="text-3xl font-bold text-white font-mono">{activeModulesCount}</div>
-             <div class="mt-1 text-[10px] text-emerald-400 font-mono">Nodes_Operational</div>
+        <div class="rounded-xl border border-white/5 bg-[#0a0a0a]/80 p-5 backdrop-blur-sm group hover:border-emerald-500/30 transition-all">
+            <div class="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-2">Active Systems</div>
+
+            {#if project.active_modules && project.active_modules.length > 0}
+                <div class="flex flex-wrap gap-1 mt-1">
+                    {#each project.active_modules.slice(0, 3) as mod}
+                        <span class="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded uppercase">
+                            {typeof mod === 'string' ? mod.replace('_', ' ') : (mod.name || 'System')}
+                        </span>
+                    {/each}
+
+                    {#if project.active_modules.length > 3}
+                        <span class="text-[9px] text-slate-500 self-center">+{project.active_modules.length - 3}</span>
+                    {/if}
+                </div>
+            {:else}
+                <div class="text-3xl font-bold text-white font-mono">0</div>
+                <div class="mt-1 text-[10px] text-slate-600 font-mono">Standby_Mode</div>
+            {/if}
         </div>
 
         <div class="rounded-xl border border-white/5 bg-[#0a0a0a]/80 p-5 backdrop-blur-sm">
@@ -109,7 +140,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {#each files.slice(0, 4) as file} {#if file && file.file_name}
+{#each files.slice(0, 4) as file} {#if file && file.file_name}
                       <div class="group flex items-center justify-between rounded border border-white/5 bg-white/[0.02] p-3 hover:border-emerald-500/30 transition-all">
                          <div class="flex items-center gap-3 overflow-hidden">
                             <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-slate-900 text-emerald-500">
@@ -128,15 +159,17 @@
                          <button
                             on:click={() => downloadFile(file.file_path || '', file.file_name || 'download')}
                             class="opacity-0 group-hover:opacity-100 transition-opacity text-emerald-500 hover:text-white"
+                            aria-label="Download {file.file_name}"
+                            title="Download {file.file_name}"
                          >
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                          </button>
                       </div>
                     {/if}
                   {:else}
-                     <div class="col-span-full border border-dashed border-white/10 rounded-xl p-6 text-center text-[10px] text-slate-600 font-mono">
+                      <div class="col-span-full border border-dashed border-white/10 rounded-xl p-6 text-center text-[10px] text-slate-600 font-mono">
                         NO_DELIVERABLES_TRANSMITTED
-                     </div>
+                      </div>
                   {/each}
                 </div>
             </div>
