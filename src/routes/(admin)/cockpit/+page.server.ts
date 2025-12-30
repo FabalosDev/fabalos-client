@@ -293,5 +293,34 @@ export const actions = {
 		const { error } = await supabase.from('project_milestones').delete().eq('id', id);
 		if (error) return fail(500, { message: error.message });
 		throw redirect(303, '/cockpit');
+	},
+
+	// Sa loob ng iyong actions = { ... }
+
+	updateMilestone: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const id = formData.get('id');
+
+		// Kunin ang bagong values
+		const title = formData.get('title');
+		const phase_label = formData.get('phase_label');
+		const status = formData.get('status');
+		const due_date = formData.get('due_date');
+
+		const { error } = await locals.supabase
+			.from('project_milestones')
+			.update({
+				title,
+				phase_label,
+				status,
+				due_date
+			})
+			.eq('id', id);
+
+		if (error) {
+			console.error('Update Error:', error);
+			return { success: false };
+		}
+		return { success: true };
 	}
 };
