@@ -6,14 +6,13 @@
   export let data;
 
   // Reactive data mapping mula sa server load
-  $: project = data.project;
+  $: ({ project, supabase } = data); // ADDED: Supabase for download
   $: milestones = data.milestones || [];
   $: files = data.files || [];
   $: actionItems = data.actionItems || [];
   $: logs = data.logs || [];
 
-  // --- STATS CALCULATION (SINGLE DECLARATION) ---
-  // Listahan ng lahat ng keywords na ibig sabihin ay "TAPOS NA"
+  // --- STATS CALCULATION ---
   const finishedKeys = ['COMPLETED', 'COMPLETE', 'TAPOS NA', 'DONE', 'OK'];
 
   $: completedCount = milestones.filter(m =>
@@ -27,6 +26,22 @@
   $: activeModulesCount = project.active_modules ? project.active_modules.length : 0;
 
   let statusStyle = { bg: 'bg-emerald-500', text: 'text-emerald-400' };
+
+  // --- DOWNLOAD FUNCTION (FIXED) ---
+  async function downloadFile(filePath, fileName) {
+      if (!filePath) return;
+      // Safe check: Ensure fileName exists, or default to 'download'
+      const safeName = fileName || 'download';
+
+      const { data } = supabase.storage.from('vault').getPublicUrl(filePath);
+
+      const link = document.createElement('a');
+      link.href = data.publicUrl;
+      link.download = safeName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  }
 </script>
 
 <svelte:head>
@@ -74,15 +89,15 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         <div class="lg:col-span-2 space-y-8">
+
             <div>
                 <h3 class="mb-4 text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Mission Trajectory
                 </h3>
-<div class="">
-    <div class="absolute left-0 top-0 h-full w-[1px] bg-gradient-to-b from-white/20 via-transparent to-white/20"></div>
-
-    <SpaceTimeline {milestones} />
-</div>
+                <div class="">
+                    <div class="absolute left-0 top-0 h-full w-[1px] bg-gradient-to-b from-white/20 via-transparent to-white/20"></div>
+                    <SpaceTimeline {milestones} />
+                </div>
             </div>
 
             <div>
@@ -94,21 +109,35 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {#each files.slice(0, 4) as file}
-                        <div class="group flex items-center gap-4 rounded-lg border border-white/5 bg-white/[0.02] p-4 transition-all hover:border-emerald-500/30 hover:bg-white/[0.05]">
-                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-slate-800 text-slate-400 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  {#each files.slice(0, 4) as file} {#if file && file.file_name}
+                      <div class="group flex items-center justify-between rounded border border-white/5 bg-white/[0.02] p-3 hover:border-emerald-500/30 transition-all">
+                         <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-slate-900 text-emerald-500">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                             </div>
-                            <div class="min-w-0 flex-1 font-mono">
-                                <p class="truncate text-sm font-medium text-white group-hover:text-emerald-400 transition-colors">{file.key.split('/').pop()}</p>
-                                <p class="text-[9px] text-slate-500 uppercase tracking-tighter">Encrypted_Asset</p>
+                            <div class="min-w-0">
+                                <div class="truncate text-xs font-bold text-slate-200 group-hover:text-white">
+                                    {file.file_name}
+                                </div>
+                                <div class="text-[9px] text-slate-500 font-mono">
+                                    {(file.file_size / 1024).toFixed(0)} KB • {new Date(file.created_at).toLocaleDateString()}
+                                </div>
                             </div>
-                        </div>
-                    {:else}
-                         <div class="col-span-2 py-8 text-center text-xs text-slate-600 border border-dashed border-white/10 rounded-lg font-mono">
-                            NO_DELIVERABLES_TRANSMITTED
                          </div>
-                    {/each}
+
+                         <button
+                            on:click={() => downloadFile(file.file_path || '', file.file_name || 'download')}
+                            class="opacity-0 group-hover:opacity-100 transition-opacity text-emerald-500 hover:text-white"
+                         >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                         </button>
+                      </div>
+                    {/if}
+                  {:else}
+                     <div class="col-span-full border border-dashed border-white/10 rounded-xl p-6 text-center text-[10px] text-slate-600 font-mono">
+                        NO_DELIVERABLES_TRANSMITTED
+                     </div>
+                  {/each}
                 </div>
             </div>
         </div>
@@ -159,6 +188,7 @@
                 </div>
             </div>
         </div>
+
       </div>
     </main>
   </div>

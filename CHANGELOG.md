@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v2.0.0] - 2025-12-31
+
+### ✨ Added
+
+- **Secure Vault Module (`/portal/[slug]/vault`)**
+
+    - Implemented server-side data fetching for `project_vault`.
+
+    - Added file upload logic connecting Supabase Storage to Database.
+
+    - **Security:** Added strict file type whitelisting (PDF, DOCX, IMG, ZIP) and 50MB size limit.
+
+    - **UI:** Drag-and-drop zone and download handling.
+
+- **Contracts & Approvals System (`/portal/[slug]/contracts`)**
+
+    - Created `project_approvals` database table.
+
+    - **Client Side:** "Clickwrap" agreement interface with digital signature timestamps.
+
+    - **Admin Side:** "Dispatcher" modal to create custom scopes/proposals per project.
+
+    - **Optimistic UI:** Instant "Signed" status update without waiting for page reload.
+
+- **Admin Dispatcher (`/cockpit/project/[id]`)**
+
+    - Dedicated project management view for Admins.
+
+    - Modal-based form to draft and deploy new contracts.
+
+    - "View Portal" deep-link button to preview the client's perspective.
+
+
+### 🐛 Fixed
+
+- **Frontend Crash (`.split` error):** Added server-side filtering in `+page.server.ts` to strip "ghost files" (records with `null` filenames) before they reach the UI.
+
+- **Admin Routing Error (500):** Renamed folder structure from `project\{id}` to `project\[id]` to fix SvelteKit dynamic routing.
+
+- **Syntax Error:** Fixed invalid export statement (`export let data../$types.js`) in Admin Project page.
+
+- **Cockpit Layout:** Fixed duplicated columns in the Admin Table; centered the "Actions" column and fixed alignment for the "Manage Contracts" button.
+
+- **Reference Error:** Added missing `storageStatus` destructuring in Admin Dispatcher script to prevent page crashes.
+
+
+### ♻️ Changed
+
+- **Navigation:** Integrated "Manage Contracts" direct links into the main Cockpit grid.
+
+- **UI/UX:** Standardized "Mission Control" aesthetic across Vault and Contract pages (Starfield background, monospace fonts, emerald/slate color palette).
+
+---
+
 ## [0.1.0] - 2025-12-26 (The Vault Beta)
 
 **Status:** ✅ Live & Secure

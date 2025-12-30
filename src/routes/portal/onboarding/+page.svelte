@@ -13,41 +13,50 @@
   <div class="relative z-10 max-w-md space-y-8">
 
     <div class="mx-auto w-20 h-20 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center relative">
-      <div class="absolute inset-0 rounded-full border border-amber-500/20 animate-ping"></div>
-      <svg class="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      <div class="absolute inset-0 rounded-full border border-emerald-500/20 animate-pulse"></div>
+      <svg class="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     </div>
 
     <div class="space-y-2">
-      <h1 class="text-4xl font-bold text-white tracking-tighter">404</h1>
-      <h2 class="text-xl font-bold text-blue-500 tracking-widest uppercase italic">Signal_Lost</h2>
+      <h1 class="text-3xl font-bold text-white tracking-tighter">SYSTEM STANDBY</h1>
+      <h2 class="text-sm font-bold text-emerald-500 tracking-[0.3em] uppercase">IDENTITY VERIFIED</h2>
     </div>
 
     <p class="text-slate-400 text-sm leading-relaxed">
-      The requested node <span class="text-red-400">/portal/onboarding</span> has been reached.
-      This identity is verified but lacks an active <span class="text-white">tenant_assignment</span>.
+      Your account is active, but no <span class="text-white">Project Environment</span> has been assigned yet.
+      <br><br>
+      Please stand by for provisioning when new projects are initialized.
     </p>
 
     <div class="bg-black/40 border border-slate-800 p-4 rounded text-xs text-slate-500 space-y-2">
       <div class="flex justify-between border-b border-white/5 pb-1">
-        <span>STATUS:</span>
-        <span class="text-amber-500 animate-pulse">AWAITING_PROVISIONING</span>
+        <span>ACCOUNT STATUS:</span>
+        <span class="text-white">VERIFIED</span>
       </div>
       <div class="flex justify-between">
-        <span>UPLINK:</span>
-        <span class="text-emerald-500">ENCRYPTED_STABLE</span>
+        <span>PROJECT ASSIGNMENT:</span>
+        <span class="text-amber-500 animate-pulse">PENDING...</span>
       </div>
     </div>
 
-    <div class="pt-4">
+    <div class="pt-6 flex flex-col gap-3">
+
       <a
-        href="/"
-        class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded text-xs font-bold text-white hover:bg-slate-800 transition-all uppercase tracking-widest shadow-xl"
+        href="mailto:admin@fabalos.com?subject=Provisioning Request: My Account"
+        class="inline-flex justify-center items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 rounded text-xs font-bold text-black transition-all uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.4)]"
       >
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-        Return to Grid
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+        Contact Administrator
       </a>
+
+      <form action="/auth/logout" method="POST">
+        <button type="submit" class="text-[10px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-red-500">
+          Sign Out
+        </button>
+      </form>
+
     </div>
   </div>
 </div>

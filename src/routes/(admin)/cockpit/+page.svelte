@@ -5,10 +5,11 @@
   import SupportPannel from './components/SupportPannel.svelte';
   import MilestoneControl from './components/MilestoneControl.svelte';
   import Footer2 from '$lib/components/Footer2.svelte';
+  import ModuleManager from './components/ModuleManager.svelte'; // <--- IMPORT THIS
 
   export let data;
   // Destructure data streams from server
-  $: ({ allProjects, allClients, tickets, milestones, storageStatus } = data);
+  $: ({ allProjects, allClients, tickets, milestones, storageStatus, modules } = data);
 </script>
 
 <svelte:head>
@@ -35,7 +36,7 @@
   <div class="space-y-16">
     <div class="grid grid-cols-1 gap-8 xl:grid-cols-[2fr_1fr]">
       <div class="w-full">
-        <ProjectGrid projects={allProjects} />
+        <ProjectGrid projects={allProjects} clients={allClients} {modules} />
       </div>
       <div class="w-full">
         <SupportPannel {tickets} />
@@ -46,6 +47,7 @@
       <ClientManager clients={allClients} users={data.systemUsers} />
       <MilestoneControl {milestones} projects={allProjects} />
     </div>
+      <ModuleManager {modules} />
   </div>
 
   <div class="mt-24 border-t border-slate-900 pt-8">
