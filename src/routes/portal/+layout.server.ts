@@ -1,50 +1,52 @@
 import { redirect } from '@sveltejs/kit';
 
 export const load = async ({ locals: { safeGetSession, supabase }, url }) => {
-	// 1. SECURITY
+	// 1. AUTH GUARD
 	const { session, user } = await safeGetSession();
 	if (!session) throw redirect(303, '/login');
 
-	// 2. FETCH CLIENT DATA (Kailangan ito ng Onboarding UI!)
-	const { data: client } = await supabase
+	// 2. BYPASS LOGIC (The "Anti-Loop" Valve)
+	// Kung papunta na sa onboarding, wag na dumaan sa DB check sa baba.
+	if (url.pathname === '/portal/onboarding') {
+		return { session, user };
+	}
+
+	// 3. FETCH CLIENT DATA
+	const { data: client, error } = await supabase
 		.from('authorized_clients')
-		.select('*')
+		.select('*, projects(*)')
 		.eq('auth_id', user.id)
 		.single();
 
-	if (!client) {
-		console.log('🆕 New User detected. Routing to Onboarding flow.');
+	// 4. DECISION TREE
+
+	// A. No Record Found -> New User
+	if (!client || error) {
+		console.log('🆕 New User / No Record: Routing to Onboarding');
 		throw redirect(303, '/portal/onboarding');
 	}
 
-	// 3. STATUS CHECKS
-
-	// SCENARIO: Nasa Onboarding page ka ba?
-	if (url.pathname.startsWith('/portal/onboarding')) {
-		// DITO ANG FIX: Hayaan lang silang manatili dito kahit ACTIVE sila.
-		// Tinanggal natin yung redirect pabalik sa '/portal' para iwas Loop.
-		return { session, user, client };
-	}
-
-	// SCENARIO: Bawal ang Pending/Disabled sa loob ng Portal
+	// B. Not Active -> Guide to Onboarding/Status Page
 	if (client.status !== 'ACTIVE') {
-		// Kung Pending -> Onboarding
-		if (client.status === 'PENDING') {
-			throw redirect(303, '/portal/onboarding');
-		}
-		// Kung Disabled -> Onboarding (para makita ang message) or Logout
-		if (['COMPLETED', 'ARCHIVED', 'DISABLED'].includes(client.status)) {
-			throw redirect(303, '/portal/onboarding');
-		}
-
-		// Default fallback
+		console.log(`⚠️ Status: ${client.status}. Restricted access.`);
 		throw redirect(303, '/portal/onboarding');
 	}
 
-	// 4. ACTIVE & AUTHORIZED
-	return {
-		session,
-		user,
-		client
-	};
+	// C. Active but No Projects -> Onboarding
+	const projects = client.projects || [];
+	if (projects.length === 0) {
+		console.log('⚠️ Active Client, but 0 projects linked.');
+		throw redirect(303, '/portal/onboarding');
+	}
+
+	// D. Fully Authorized -> Direct to their specific Tenant/Project
+	const target = `/portal/${projects[0].tenant_slug}`;
+
+	// Iwasan ang redirect loop kung nandoon na tayo sa target
+	if (url.pathname !== target) {
+		console.log(`✅ Access Granted: Redirecting to ${target}`);
+		throw redirect(303, target);
+	}
+
+	return { session, user, client, projects };
 };
