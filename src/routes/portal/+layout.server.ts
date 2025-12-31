@@ -12,8 +12,10 @@ export const load = async ({ locals: { safeGetSession, supabase }, url }) => {
 		.eq('auth_id', user.id)
 		.single();
 
-	// Kung walang client record, logout agad.
-	if (!client) throw redirect(303, '/auth/logout');
+	if (!client) {
+		console.log('🆕 New User detected. Routing to Onboarding flow.');
+		throw redirect(303, '/portal/onboarding');
+	}
 
 	// 3. STATUS CHECKS
 
