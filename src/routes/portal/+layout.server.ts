@@ -42,9 +42,10 @@ export const load = async ({ locals: { safeGetSession, supabase }, url }) => {
 	// D. Fully Authorized -> Direct to their specific Tenant/Project
 	const target = `/portal/${projects[0].tenant_slug}`;
 
-	// Iwasan ang redirect loop kung nandoon na tayo sa target
-	if (url.pathname !== target) {
-		console.log(`✅ Access Granted: Redirecting to ${target}`);
+	// ✅ FIX: Only redirect if they are NOT inside the correct tenant folder yet.
+	// This allows "/portal/slug/crm" and "/portal/slug/files" to pass.
+	if (!url.pathname.startsWith(target)) {
+		console.log(`✅ Redirecting to correct tenant: ${target}`);
 		throw redirect(303, target);
 	}
 
