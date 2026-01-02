@@ -1,19 +1,18 @@
-// src/routes/portal/[tenant_slug]/+page.server.ts
 import { redirect } from '@sveltejs/kit';
 
 export const load = async ({ params, parent, locals: { supabase } }) => {
-	// 1. Inherit Data from Layout (Efficient!)
+	// 1. Inherit Data from Layout
+	// This gives us the User, the Client Record, and the Super Admin status
 	const { user, client, isSuperAdmin } = await parent();
 
-	// 2. THE GATEKEEPER
-	// If you aren't the Client AND you aren't the Admin -> KICK.
+	// 2. THE GATEKEEPER (Level 1)
+	// Stop random strangers who aren't in your 'authorized_clients' table
 	if (!client && !isSuperAdmin) {
 		console.log('⛔ Access Denied: User is neither Client nor Admin.');
 		throw redirect(303, '/portal/onboarding');
 	}
 
 	// 3. FETCH PROJECT
-	// (Your RLS will allow this because you are Super Admin)
 	const { data: project } = await supabase
 		.from('projects')
 		.select('*, authorized_clients(client_name)')
@@ -22,7 +21,18 @@ export const load = async ({ params, parent, locals: { supabase } }) => {
 
 	if (!project) return { status: 'not_found' };
 
-	// 4. FETCH ASSETS (Parallel)
+	// 4. THE OWNERSHIP CHECK (Level 2 - THE FIX)
+	// We explicitly check: Does this project belong to this user?
+	// Note: We check both user.id and client.id to cover your schema setup.
+	const isOwner = project.client_id === user.id || project.client_id === client?.id;
+
+	if (!isSuperAdmin && !isOwner) {
+		console.log(`⛔ SECURITY ALERT: User ${user.email} tried to access project ${project.name}`);
+		// Redirect them to their OWN dashboard instead of the one they tried to hack
+		throw redirect(303, '/unauthorized');
+	}
+
+	// 5. FETCH ASSETS (Only runs if you passed the check above)
 	const [milestonesRes, modulesRes, filesRes] = await Promise.all([
 		supabase
 			.from('project_milestones')
@@ -47,7 +57,6 @@ export const load = async ({ params, parent, locals: { supabase } }) => {
 	return {
 		status: 'authorized',
 		user,
-		// If Admin, use a dummy name so the UI doesn't crash
 		client: client || { client_name: 'FABALOS_ADMIN_OVERRIDE' },
 		project: { ...project, active_modules },
 		milestones: milestonesRes.data || [],
