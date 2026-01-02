@@ -1,18 +1,19 @@
+// src/routes/portal/[tenant_slug]/+page.server.ts
 import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ params, locals: { supabase, safeGetSession } }) => {
-	const { session, user } = await safeGetSession();
-	if (!session || !user) throw redirect(303, '/login');
+export const load = async ({ params, parent, locals: { supabase } }) => {
+	// 1. Inherit Data from Layout (Efficient!)
+	const { user, client, isSuperAdmin } = await parent();
 
-	const { data: client } = await supabase
-		.from('authorized_clients')
-		.select('*')
-		.eq('auth_id', user.id)
-		.single();
+	// 2. THE GATEKEEPER
+	// If you aren't the Client AND you aren't the Admin -> KICK.
+	if (!client && !isSuperAdmin) {
+		console.log('⛔ Access Denied: User is neither Client nor Admin.');
+		throw redirect(303, '/portal/onboarding');
+	}
 
-	if (!client) return { status: 'unauthorized', user };
-
-	// 1. KUNIN ANG PROJECT
+	// 3. FETCH PROJECT
+	// (Your RLS will allow this because you are Super Admin)
 	const { data: project } = await supabase
 		.from('projects')
 		.select('*, authorized_clients(client_name)')
@@ -21,19 +22,14 @@ export const load = async ({ params, locals: { supabase, safeGetSession } }) => 
 
 	if (!project) return { status: 'not_found' };
 
-	// 2. FETCH REAL DATA
+	// 4. FETCH ASSETS (Parallel)
 	const [milestonesRes, modulesRes, filesRes] = await Promise.all([
-		// A. Milestones
 		supabase
 			.from('project_milestones')
 			.select('*')
 			.eq('project_id', project.id)
 			.order('due_date', { ascending: true }),
-
-		// B. Modules
 		supabase.from('project_modules').select('*, modules(*)').eq('project_id', project.id),
-
-		// C. FILES
 		supabase
 			.from('project_vault')
 			.select('*')
@@ -41,28 +37,20 @@ export const load = async ({ params, locals: { supabase, safeGetSession } }) => 
 			.order('created_at', { ascending: false })
 	]);
 
-	// I-format ang modules
+	// Clean Data
 	const active_modules =
 		modulesRes.data
-			?.map((m) => ({
-				name: m.modules?.name,
-				slug: m.modules?.slug
-			}))
+			?.map((m) => ({ name: m.modules?.name, slug: m.modules?.slug }))
 			.filter((m) => m.slug) || [];
-
-	// --- SECURITY FILTER ---
-	// Dito natin tatanggalin ang mga "Ghost Files" (null filenames)
-	// para hindi na mag-error ang .split() sa frontend.
 	const cleanFiles = (filesRes.data || []).filter((f) => f.file_name && f.file_path);
 
 	return {
 		status: 'authorized',
 		user,
-		client,
+		// If Admin, use a dummy name so the UI doesn't crash
+		client: client || { client_name: 'FABALOS_ADMIN_OVERRIDE' },
 		project: { ...project, active_modules },
 		milestones: milestonesRes.data || [],
-		files: cleanFiles, // Gamitin ang malinis na listahan
-		actionItems: [],
-		logs: []
+		files: cleanFiles
 	};
 };
