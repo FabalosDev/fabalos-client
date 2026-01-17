@@ -41,50 +41,49 @@ options: {
     }
     loading = false;
   }
-// 🔐 PHASE 2: VERIFY CODE (SMART ROUTING ACTIVATED)
-  async function verifyCode() {
-    loading = true;
-    message = '';
+// 🔐 PHASE 2: VERIFY CODE (SCHEMA MATCHED TO YOUR REPO)
+async function verifyCode() {
+  loading = true;
+  message = '';
 
-    // 1. Authenticate
-    const { data: authData, error: authError } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: 'email'
-    });
+  const { data: authData, error: authError } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email'
+  });
 
-    if (authError) {
-      message = `ACCESS_DENIED: ${authError.message}`;
-      loading = false;
-      return; // Stop if password is wrong
-    }
-
-    // 2. Auth Success - Now Check Project Status
-    message = 'ACCESS_GRANTED: Initializing routing protocol...';
-
-    const userId = authData.session?.user?.id;
-
-    if (userId) {
-      // 🔍 QUERY SUPABASE: Does this user have a project?
-      // ⚠️ NOTE: Ensure table name is 'projects' and column is 'slug'
-      const { data: project } = await supabase
-        .from('projects')
-        .select('slug')
-        .eq('user_id', userId)
-        .maybeSingle(); // "maybeSingle" prevents errors if they are new (null)
-
-      // 3. Execute Redirect
-      setTimeout(() => {
-        if (project && project.slug) {
-          // ✅ OLD GUARD: Go to their specific project
-          goto(`/portal/${project.slug}`);
-        } else {
-          // 🆕 NEW GUARD: Go to onboarding
-          goto('/portal/onboarding');
-        }
-      }, 800);
-    }
+  if (authError) {
+    message = `ACCESS_DENIED: ${authError.message}`;
+    loading = false;
+    return;
   }
+
+  message = 'ACCESS_GRANTED: Syncing with client profile...';
+
+  const userId = authData.session?.user?.id;
+
+  if (userId) {
+    // 🔍 CORRECT QUERY based on your +layout.server.ts
+    // We query authorized_clients first, then join projects
+    const { data: clientData } = await supabase
+      .from('authorized_clients')
+      .select('projects(tenant_slug)') // Select the specific column you use
+      .eq('auth_id', userId)
+      .single();
+
+    // 3. Execute Redirect
+    setTimeout(() => {
+      // Check if projects array exists and has at least one item
+      if (clientData?.projects && clientData.projects.length > 0) {
+        // ✅ CORRECT REDIRECT: Use tenant_slug
+        goto(`/portal/${clientData.projects[0].tenant_slug}`);
+      } else {
+        // 🆕 Fallback
+        goto('/portal/onboarding');
+      }
+    }, 800);
+  }
+}
 </script>
 
 <main class="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] p-6 font-mono">
