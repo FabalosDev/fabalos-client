@@ -41,24 +41,48 @@ options: {
     }
     loading = false;
   }
-  // 🔐 PHASE 2: VERIFY CODE
+// 🔐 PHASE 2: VERIFY CODE (SMART ROUTING ACTIVATED)
   async function verifyCode() {
     loading = true;
     message = '';
 
-    const { data, error } = await supabase.auth.verifyOtp({
+    // 1. Authenticate
+    const { data: authData, error: authError } = await supabase.auth.verifyOtp({
       email,
       token,
       type: 'email'
     });
 
-    if (error) {
-      message = `ACCESS_DENIED: ${error.message}`;
+    if (authError) {
+      message = `ACCESS_DENIED: ${authError.message}`;
       loading = false;
-    } else {
-      message = 'ACCESS_GRANTED: Initializing session...';
-      // 🚀 Redirect to Onboarding
-      setTimeout(() => goto('/portal/onboarding'), 800);
+      return; // Stop if password is wrong
+    }
+
+    // 2. Auth Success - Now Check Project Status
+    message = 'ACCESS_GRANTED: Initializing routing protocol...';
+
+    const userId = authData.session?.user?.id;
+
+    if (userId) {
+      // 🔍 QUERY SUPABASE: Does this user have a project?
+      // ⚠️ NOTE: Ensure table name is 'projects' and column is 'slug'
+      const { data: project } = await supabase
+        .from('projects')
+        .select('slug')
+        .eq('user_id', userId)
+        .maybeSingle(); // "maybeSingle" prevents errors if they are new (null)
+
+      // 3. Execute Redirect
+      setTimeout(() => {
+        if (project && project.slug) {
+          // ✅ OLD GUARD: Go to their specific project
+          goto(`/portal/${project.slug}`);
+        } else {
+          // 🆕 NEW GUARD: Go to onboarding
+          goto('/portal/onboarding');
+        }
+      }, 800);
     }
   }
 </script>
