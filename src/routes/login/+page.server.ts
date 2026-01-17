@@ -4,25 +4,25 @@ export const load = async ({ locals: { safeGetSession, supabase } }) => {
 	// 1. Get Session
 	const { session } = await safeGetSession();
 
-	// 2. If logged in, decide where to go
+	// 2. If logged in, perform the "Smart Check"
 	if (session) {
-		// 🔍 SMART ROUTING: Check if user has an active project
-		const { data: project } = await supabase
-			.from('projects') // ⚠️ Make sure this matches your table name
-			.select('slug')
-			.eq('user_id', session.user.id)
-			.limit(1)
+		// 🔍 CORRECT QUERY: Check authorized_clients first (matches your Portal logic)
+		const { data: client } = await supabase
+			.from('authorized_clients')
+			.select('*, projects(*)') // Fetch linked projects
+			.eq('auth_id', session.user.id)
 			.single();
 
-		if (project && project.slug) {
-			// ✅ Case A: Existing Client -> Go to their specific Project Dashboard
-			throw redirect(303, `/portal/${project.slug}`);
+		// 3. Decide Destination
+		if (client && client.projects && client.projects.length > 0) {
+			// ✅ Case A: Existing Client -> Use 'tenant_slug' (not 'slug')
+			throw redirect(303, `/portal/${client.projects[0].tenant_slug}`);
 		} else {
 			// 🆕 Case B: New User -> Go to Onboarding
 			throw redirect(303, '/portal/onboarding');
 		}
 	}
 
-	// 3. If not logged in, return empty (stay on login page)
+	// 3. If not logged in, return empty (render the login page)
 	return {};
 };
