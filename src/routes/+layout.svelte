@@ -10,7 +10,7 @@
 
 <svelte:head>
   <title>Fabalos Automation — Intelligent Systems Architecture</title>
-  <link rel="icon" href="/favicon.png" type="image/png" />
+  <link rel="icon" href="/favicon.svg" type="image/png" />
   <meta name="theme-color" content="#030303" />
 </svelte:head>
 
