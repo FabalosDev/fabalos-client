@@ -8,7 +8,7 @@ export const load = async ({ parent }) => {
 	// 1. GOD MODE REDIRECT
 	if (isSuperAdmin) {
 		console.log('⚡ SUPER ADMIN DETECTED. Warping to Mission Control.');
-		throw redirect(303, '/portal/admin_core');
+		throw redirect(303, '/portal/fabalos');
 	}
 
 	// 2. CLIENT REDIRECT

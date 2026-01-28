@@ -38,6 +38,7 @@
           <li>Conduct <strong class="text-white">workflow review</strong> through screen shares, shared docs, or direct observation to document as-is processes.</li>
           <li>Identify bottlenecks using time/motion analysis and ROI estimation to qualify projects prior to proposal.</li>
           <li>Deliver <strong class="text-white">audit report</strong> with prioritized opportunities, estimated timelines, and fixed-price proposal—no further work until signed.</li>
+          <li>Deploy <strong class="text-white">Secure Content Vault</strong> in the Client Portal to centralize credentials, API keys, and raw assets.</li>
         </ul>
       </div>
     </div>

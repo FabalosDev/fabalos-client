@@ -31,7 +31,7 @@
     <ul class="space-y-3 pt-2">
       <li class="flex gap-3 text-slate-300">
         <span class="text-blue-400 font-mono text-xs pt-1">RULE</span>
-        <span>Use <strong class="text-white">agreed support channels</strong> (email, shared Slack/Teams workspace, or ticketing system) for proposals, approvals, changes, and issue reporting.</span>
+        <span>Technical issues must be logged via the <strong class="text-white">Portal Ticket System</strong>. Direct messages (Slack/Email) are for strategic alignment only.</span>
       </li>
       <li class="flex gap-3 text-slate-300">
         <span class="text-amber-400 font-mono text-xs pt-1">NOTE</span>
@@ -132,6 +132,17 @@
         <p class="text-xs text-slate-400 leading-relaxed">
           Optional monthly retainer for monitoring, minor tweaks, updates, and priority response SLAs.
         </p>
+      </div>
+
+      <div class="bg-slate-950/50 p-3 rounded border border-slate-800/50 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-blue-500/10 to-transparent -mr-8 -mt-8 rounded-bl-full"></div>
+        <h3 class="text-sm font-semibold text-white mb-1">Portal Access</h3>
+        <p class="text-xs text-slate-400 leading-relaxed mb-2">
+          Active for duration of engagement + <strong class="text-blue-400">7 days post-handover</strong>.
+        </p>
+        <div class="text-[10px] text-slate-500 bg-slate-900/50 p-1.5 rounded border border-slate-800">
+          <strong class="text-slate-400">Protocol:</strong> Assets archived to Cold Storage if no active Retainer.
+        </div>
       </div>
     </div>
   </div>

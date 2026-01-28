@@ -94,7 +94,7 @@
       <svg class="h-4 w-4 transition-colors group-hover:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={icons.anomaly} />
       </svg>
-      Report Anomaly
+      Support Ticket
     </button>
     <a href="mailto:admin@fabalos.com" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-white/5 text-slate-400 border border-transparent">
       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={icons.transmission} /></svg>
