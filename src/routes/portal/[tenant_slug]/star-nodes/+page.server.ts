@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 
 export const load = async ({ params, locals: { supabase } }) => {
-    // 1. Kunin ang Project Details base sa tenant_slug
+    // 1. Get Project
     const { data: project, error: pError } = await supabase
         .from('projects')
         .select('*')
@@ -10,22 +10,21 @@ export const load = async ({ params, locals: { supabase } }) => {
 
     if (pError || !project) throw error(404, 'Project not found');
 
-    // 2. Kunin ang Milestones (Star Nodes)
+    // 2. Get Milestones (Table: project_milestones | Column: due_date)
     const { data: milestones } = await supabase
-        .from('milestones')
+        .from('project_milestones')
         .select('*')
         .eq('project_id', project.id)
-        .order('target_date', { ascending: true });
+        .order('due_date', { ascending: true });
 
-    // 3. Kunin ang Files (Transmissions)
+    // 3. Get Files (Table: project_vault)
+    // NOTE: We assign it to 'files' variable so the Frontend doesn't break
     const { data: files } = await supabase
-        .from('project_files')
+        .from('project_vault')
         .select('*')
         .eq('project_id', project.id)
         .order('created_at', { ascending: false });
 
-    // ITO ANG IMPORTANTE: Ang mga keys dito (project, milestones, files)
-    // dapat match sa dini-destructure mo sa frontend script.
     return {
         project,
         milestones: milestones || [],
